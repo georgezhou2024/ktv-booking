@@ -20,7 +20,7 @@
                     <select id="store" required>
                         <option value="">请选择门店</option>
                         <option>PH CLUB</option>
-                        <option>ERO ROOM</option>
+                        <option>VIP ROOM</option>
                         <option>ACME</option>
                         <option>WOOD</option>
                         <option>SENSORY GARDEN</option>
@@ -28,7 +28,7 @@
                     </select>
                 </div>
                 <div>
-                    <label>客户姓名</label>
+                    <label>客户姓名 <button type="button" onclick="openCustomerBook()">客户本</button></label>
                     <input type="text" id="name" required oninput="autoFillCustomer()">
                 </div>
             </div>
@@ -62,13 +62,6 @@
                     <input type="text" id="minConsume" placeholder="低消金额">
                 </div>
             </div>
-            <div class="row">
-                <div>
-                    <label>金额</label>
-                    <input type="number" id="price" min="0" step="0.01">
-                </div>
-                <div></div>
-            </div>
             <label>备注（押金、客户需求、到店时间）</label>
             <textarea id="remark" rows="3" placeholder="押金、预留小吃、客户偏好等"></textarea>
             <button type="submit">保存预订</button>
@@ -80,8 +73,9 @@
         <input type="text" id="searchInput" placeholder="搜索客户姓名 / 包厢 / 门店">
         <input type="date" id="filterDate">
         <button onclick="renderList()">筛选</button>
-        <button onclick="exportData()">导出预订备份</button>
-        <button onclick="exportCustomerData()">导出客户档案</button>
+        <button onclick="exportData()">导出预订JSON</button>
+        <button onclick="exportCustomerData()">导出客户档案JSON</button>
+        <button onclick="copyAllList()">复制全部预约文本</button>
     </div>
 
     <!-- 预订列表 -->
@@ -97,13 +91,21 @@
                     <th>时段</th>
                     <th>人数</th>
                     <th>低消</th>
-                    <th>金额</th>
                     <th>备注</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
+    </div>
+</div>
+
+<!-- 客户本弹窗 -->
+<div id="customerModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);padding:30px;">
+    <div style="background:white;max-width:500px;margin:0 auto;padding:20px;border-radius:10px;">
+        <h3>客户本（点击选择客户）</h3>
+        <div id="customerListBox" style="max-height:400px;overflow:auto;margin:10px 0;"></div>
+        <button onclick="closeCustomerBook()">关闭</button>
     </div>
 </div>
 
