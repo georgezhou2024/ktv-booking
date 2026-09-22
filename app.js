@@ -25,6 +25,34 @@ function autoFillCustomer(){
     }
 }
 
+// 打开客户本弹窗
+function openCustomerBook(){
+    const db = getCustomerDB();
+    const box = document.getElementById("customerListBox");
+    box.innerHTML = "";
+    const names = Object.keys(db);
+    if(names.length === 0){
+        box.innerText="暂无客户记录";
+    }else{
+        names.forEach(n=>{
+            const p = db[n];
+            const btn = document.createElement("button");
+            btn.style="display:block;width:100%;text-align:left;margin:4px;padding:8px;";
+            btn.innerText = `${n} | ${p}`;
+            btn.onclick = ()=>{
+                document.getElementById("name").value = n;
+                document.getElementById("phone").value = p;
+                closeCustomerBook();
+            }
+            box.appendChild(btn);
+        })
+    }
+    document.getElementById("customerModal").style.display="block";
+}
+function closeCustomerBook(){
+    document.getElementById("customerModal").style.display="none";
+}
+
 function renderList(){
     const list = getBooks();
     const search = document.getElementById("searchInput").value.toLowerCase();
@@ -52,15 +80,43 @@ function renderList(){
             <td>${item.timeSlot}</td>
             <td>${item.people||""}</td>
             <td>${item.minConsume||""}</td>
-            <td>¥${item.price||0}</td>
             <td>${item.remark||""}</td>
             <td>
                 <button onclick="editItem(${idx})">编辑</button>
                 <button class="del" onclick="deleteItem(${idx})">删除</button>
+                <button onclick="copySingle(${idx})">复制单条</button>
             </td>
         `
         tbody.appendChild(tr);
     })
+}
+
+// 复制单条预约文本
+function copySingle(idx){
+    const list = getBooks();
+    const item = list[idx];
+    const text = `门店：${item.store}\n日期：${item.bookDate}\n客户：${item.name} ${item.phone||""}\n包厢：${item.room}\n时段：${item.timeSlot}\n人数：${item.people||""}\n低消：${item.minConsume||""}\n备注：${item.remark||""}`;
+    navigator.clipboard.writeText(text).then(()=>alert("✅单条已复制到剪贴板"));
+}
+
+// 复制全部筛选后的预约文本
+function copyAllList(){
+    const list = getBooks();
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const filterDay = document.getElementById("filterDate").value;
+    const today = getTodayStr();
+    let filtered = list.filter(item=>{
+        const isNotExpire = item.bookDate >= today;
+        const matchSearch = item.name.toLowerCase().includes(search) || item.room.toLowerCase().includes(search) || item.store.toLowerCase().includes(search);
+        const matchDate = !filterDay || item.bookDate === filterDay;
+        return isNotExpire && matchSearch && matchDate;
+    })
+    filtered.sort((a,b)=>new Date(a.bookDate)-new Date(b.bookDate));
+    let fullText = "=====全部预约=====\n";
+    filtered.forEach(item=>{
+        fullText += `门店：${item.store} | 日期：${item.bookDate} | 客户：${item.name} ${item.phone||""} | 包厢：${item.room} | 时段：${item.timeSlot} | 人数：${item.people||""} | 低消：${item.minConsume||""} | 备注：${item.remark||""}\n`
+    })
+    navigator.clipboard.writeText(fullText).then(()=>alert("✅全部预约已复制"));
 }
 
 // 获取今日日期字符串 yyyy-mm-dd
@@ -104,7 +160,6 @@ document.getElementById("bookForm").addEventListener("submit",function(e){
         timeSlot: timeSlot,
         people: document.getElementById("people").value,
         minConsume: document.getElementById("minConsume").value,
-        price: document.getElementById("price").value,
         remark: document.getElementById("remark").value
     }
     list.push(newItem);
@@ -137,13 +192,12 @@ function editItem(idx){
     item.timeSlot = prompt("时段",item.timeSlot);
     item.people = prompt("人数",item.people);
     item.minConsume = prompt("低消",item.minConsume);
-    item.price = prompt("金额",item.price);
     item.remark = prompt("备注",item.remark);
     saveBooks(list);
     renderList();
 }
 
-//导出预订备份
+//导出预订备份JSON
 function exportData(){
     const data = getBooks();
     const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
@@ -155,7 +209,7 @@ function exportData(){
     URL.revokeObjectURL(url);
 }
 
-//导出客户档案
+//导出客户档案JSON
 function exportCustomerData(){
     const data = getCustomerDB();
     const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
