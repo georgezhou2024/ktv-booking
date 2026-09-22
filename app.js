@@ -73,15 +73,15 @@ function renderList(){
     filtered.forEach((item,idx)=>{
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${item.store||""}</td>
-            <td>${item.bookDate}</td>
-            <td>${item.name}<br>${item.phone||""}</td>
-            <td>${item.room}</td>
-            <td>${item.timeSlot}</td>
-            <td>${item.people||""}</td>
-            <td>${item.minConsume||""}</td>
-            <td>${item.remark||""}</td>
-            <td>
+            <td data-label="门店">${item.store||""}</td>
+            <td data-label="预订日期">${item.bookDate}</td>
+            <td data-label="客户">${item.name}<br>${item.phone||""}</td>
+            <td data-label="包厢">${item.room}</td>
+            <td data-label="时段">${item.timeSlot}</td>
+            <td data-label="人数">${item.people||""}</td>
+            <td data-label="低消">${item.minConsume||""}</td>
+            <td data-label="备注">${item.remark||""}</td>
+            <td data-label="操作">
                 <button onclick="editItem(${idx})">编辑</button>
                 <button class="del" onclick="deleteItem(${idx})">删除</button>
                 <button onclick="copySingle(${idx})">复制单条</button>
