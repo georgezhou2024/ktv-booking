@@ -11,7 +11,19 @@ button.del{background:#dc2626}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #e5e7eb;padding:8px;text-align:left;font-size:14px}
 th{background:#f9fafb}
+.table-wrap{overflow-x:auto}
+
+/* 手机端适配：屏幕小于768px时，表格转卡片布局，解决挤压错乱 */
 @media (max-width:768px){
     .row{grid-template-columns:1fr}
-    table{font-size:12px}
+    /* 隐藏表头 */
+    table thead{display:none;}
+    table,tbody,tr,td{display:block;width:100%;}
+    tr{border:1px solid #eee;margin-bottom:16px;border-radius:10px;padding:12px;}
+    td{border:none;border-bottom:1px solid #f3f3f3;text-align:left;padding:8px 4px;}
+    td::before{
+        content:attr(data-label);
+        font-weight:bold;
+        display:inline-block;width:90px;
+    }
 }
