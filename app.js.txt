@@ -1,0 +1,123 @@
+// 读取本地存储
+function getBooks(){
+    const data = localStorage.getItem("ktvBookList");
+    return data ? JSON.parse(data) : [];
+}
+function saveBooks(list){
+    localStorage.setItem("ktvBookList", JSON.stringify(list));
+}
+
+// 渲染列表
+function renderList(){
+    const list = getBooks();
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const filterDay = document.getElementById("filterDate").value;
+
+    let filter = list.filter(item=>{
+        const matchSearch = item.name.toLowerCase().includes(search) || item.room.toLowerCase().includes(search);
+        const matchDate = !filterDay || item.bookDate === filterDay;
+        return matchSearch && matchDate;
+    })
+    // 按预订日期倒序
+    filter.sort((a,b)=>new Date(b.bookDate)-new Date(a.bookDate));
+
+    const tbody = document.getElementById("bookList");
+    tbody.innerHTML = "";
+    filter.forEach((item,idx)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.bookDate}</td>
+            <td>${item.name}<br>${item.phone||""}</td>
+            <td>${item.room}</td>
+            <td>${item.timeSlot}</td>
+            <td>${item.people}</td>
+            <td>${item.package}</td>
+            <td>¥${item.price}</td>
+            <td>${item.remark}</td>
+            <td>
+                <button onclick="editBook(${idx})">编辑</button>
+                <button class="del" onclick="delBook(${idx})">删除</button>
+            </td>
+        `
+        tbody.appendChild(tr);
+    })
+}
+
+// 新增订单，增加防撞包厢校验
+document.getElementById("bookForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    const list = getBooks();
+    const bookDate = document.getElementById("bookDate").value;
+    const room = document.getElementById("room").value;
+    const timeSlot = document.getElementById("timeSlot").value;
+
+    // 防撞单：同一天+同一个包厢+同一时段不能重复预订
+    const conflict = list.some(item=>{
+        return item.bookDate === bookDate && item.room === room && item.timeSlot === timeSlot;
+    });
+    if(conflict){
+        alert(`⚠️ 冲突！${bookDate} ${room} ${timeSlot} 已经有预订！`);
+        return;
+    }
+
+    const newItem = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        bookDate: bookDate,
+        room: room,
+        timeSlot: timeSlot,
+        people: document.getElementById("people").value,
+        package: document.getElementById("package").value,
+        price: document.getElementById("price").value,
+        remark: document.getElementById("remark").value
+    }
+    list.push(newItem);
+    saveBooks(list);
+    this.reset();
+    renderList();
+    alert("✅ KTV预订已保存！");
+})
+
+// 删除
+function delBook(idx){
+    const list = getBooks();
+    if(confirm("确定删除这条预订？")){
+        list.splice(idx,1);
+        saveBooks(list);
+        renderList();
+    }
+}
+
+// 编辑
+function editBook(idx){
+    const list = getBooks();
+    const item = list[idx];
+    const name = prompt("客户姓名",item.name);
+    if(!name) return;
+    const phone = prompt("联系方式",item.phone);
+    const bookDate = prompt("预订日期",item.bookDate);
+    const room = prompt("包厢",item.room);
+    const timeSlot = prompt("时段",item.timeSlot);
+    const people = prompt("到场人数",item.people);
+    const packageInfo = prompt("套餐/低消",item.package);
+    const price = prompt("金额",item.price);
+    const remark = prompt("备注",item.remark);
+
+    list[idx] = {name,phone,bookDate,room,timeSlot,people,package:packageInfo,price,remark};
+    saveBooks(list);
+    renderList();
+}
+
+// 导出备份json
+function exportData(){
+    const dataStr = JSON.stringify(getBooks(),null,2);
+    const blob = new Blob([dataStr],{type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "KTV预订备份.json";
+    a.click();
+}
+
+// 初始化
+renderList();
