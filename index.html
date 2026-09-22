@@ -3,347 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensory Garden MENU</title>
+    <title>Acme Drink Menu</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif;
         }
 
         body {
+            /* 咖啡色皮革质感背景 */
             background:
-                radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.08), transparent 26%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.06), transparent 28%),
-                radial-gradient(circle at 50% 90%, rgba(0, 0, 0, 0.25), transparent 30%),
-                linear-gradient(160deg, #1b3a2b 0%, #245038 45%, #1e4530 100%);
+                radial-gradient(circle at 25% 15%, rgba(120,70,40,0.22), transparent 32%),
+                radial-gradient(circle at 75% 80%, rgba(90,50,30,0.28), transparent 35%),
+                linear-gradient(145deg, #4b2c1c 0%, #633a26 50%, #3f2417 100%);
             padding: 18px;
-            color: #e8f5ee;
+            color: #f3e9e2;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1140px;
             margin: 0 auto;
         }
 
         .page-title {
             text-align: center;
-            font-size: 36px;
-            font-weight: 800;
-            letter-spacing: 3px;
-            color: #f5fffa;
-            margin-bottom: 6px;
-        }
-
-        .page-subtitle {
-            text-align: center;
-            font-size: 13px;
-            color: #b7d9c5;
-            margin-bottom: 24px;
+            font-size: 44px;
+            font-style: italic;
+            font-weight: 600;
             letter-spacing: 4px;
+            color: #fff8f3;
+            margin-bottom:4px;
+        }
+        .page-subtitle {
+            text-align:center;
+            font-size:14px;
+            color:#ddc9bc;
+            margin-bottom:26px;
+            letter-spacing:2px;
         }
 
-        .jungle-bar {
-            height: 10px;
-            background: linear-gradient(90deg, #0f2418, #2e6b47, #4caf70, #2e6b47, #0f2418);
-            border-radius: 999px;
-            margin-bottom: 24px;
-            box-shadow: 0 0 18px rgba(76, 175, 112, 0.35);
+        .divider-line{
+            height:2px;
+            background:linear-gradient(90deg,transparent,#b88c6e,transparent);
+            margin-bottom:24px;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.96);
-            border-radius: 16px;
-            padding: 22px;
-            margin-bottom: 18px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(76, 175, 112, 0.25);
-            color: #1b3a2b;
+            background: rgba(255,252,248,0.94);
+            border-radius:14px;
+            padding:24px;
+            margin-bottom:20px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+            border:1px solid #a0785e;
+            color:#3b2216;
         }
 
-        h2 {
-            border-left: 6px solid #2e7d4b;
-            padding-left: 12px;
-            margin-bottom: 16px;
-            font-size: 21px;
-            color: #1b5e34;
+        h2{
+            border-left:6px solid #804c30;
+            padding-left:14px;
+            margin-bottom:18px;
+            font-size:22px;
+            color:#522f1d;
         }
 
-        .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 11px 0;
-            border-bottom: 1px dashed #d7eadf;
-            gap: 12px;
-            flex-wrap: wrap;
+        .item{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            padding:12px 0;
+            border-bottom:1px dashed #d4c4ba;
+            gap:14px;
+            flex-wrap:wrap;
+        }
+        .item:last-child{
+            border-bottom:none;
+        }
+        .name{
+            flex:1;
+            font-size:15px;
+        }
+        .sub-text{
+            font-size:12px;
+            color:#745746;
+            margin-top:3px;
+            line-height:1.4;
+        }
+        .price{
+            font-weight:700;
+            color:#992c22;
+            white-space:nowrap;
+            font-size:15px;
         }
 
-        .item:last-child {
-            border-bottom: none;
+        .menu-grid{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(142px,1fr));
+            gap:13px;
+            margin-bottom:24px;
         }
-
-        .name {
-            flex: 1;
-            font-size: 15px;
-            color: #1b3a2b;
+        .cat-btn{
+            padding:15px 8px;
+            background:linear-gradient(140deg,#70422b,#502e1d);
+            color:#fff8f3;
+            border:1px solid #966d54;
+            border-radius:12px;
+            font-size:14px;
+            font-weight:600;
+            cursor:pointer;
+            letter-spacing:1px;
+            box-shadow:0 5px 14px rgba(0,0,0,0.3);
+            transition: transform 0.14s ease, box-shadow 0.14s ease;
         }
-
-        .sub {
-            font-size: 12px;
-            color: #6b957a;
-            margin-top: 2px;
-        }
-
-        .price {
-            font-weight: 700;
-            color: #c0392b;
-            white-space: nowrap;
-            font-size: 15px;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 14px;
-            margin-bottom: 22px;
-        }
-
-        .cat-btn {
-            padding: 16px 10px;
-            background: linear-gradient(145deg, #2e7d4b, #1b5e34);
-            color: #f5fffa;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 2px;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .cat-btn:hover {
+        .cat-btn:hover{
             transform: translateY(-2px);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+            box-shadow:0 8px 20px rgba(0,0,0,0.38);
+        }
+        .cat-btn.active{
+            background:linear-gradient(140deg,#a06544,#7d4b30);
+            box-shadow:0 0 0 2px rgba(219,174,142,0.45),0 9px 22px rgba(120,65,35,0.4);
+            border-color:#ddb89f;
         }
 
-        .cat-btn.active {
-            background: linear-gradient(145deg, #4caf70, #2e7d4b);
-            border-color: #a5e0b7;
-            box-shadow: 0 0 0 2px rgba(165, 224, 183, 0.45), 0 10px 24px rgba(76, 175, 112, 0.45);
+        .cat-page{
+            display:none;
+        }
+        .cat-page.active{
+            display:block;
+            animation:fadeIn 0.28s ease;
+        }
+        @keyframes fadeIn{
+            from{opacity:0;transform:translateY(8px);}
+            to{opacity:1;transform:translateY(0);}
         }
 
-        .cat-page {
-            display: none;
+        .notice-block{
+            background:#f7efea;
+            padding:16px;
+            border-radius:10px;
+            margin-top:10px;
+            font-size:14px;
+            line-height:1.6;
+            color:#442a1b;
+        }
+        .footer-note{
+            text-align:center;
+            color:#c9b3a4;
+            font-size:13px;
+            margin-top:32px;
+            letter-spacing:2px;
         }
 
-        .cat-page.active {
-            display: block;
-            animation: fadeIn 0.25s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .footer-note {
-            text-align: center;
-            color: #b7d9c5;
-            font-size: 13px;
-            margin-top: 28px;
-            letter-spacing: 2px;
-        }
-
-        @media (max-width: 600px) {
-            .page-title {
-                font-size: 28px;
-            }
-
-            .card {
-                padding: 18px;
-            }
-
-            .item {
-                flex-direction: column;
-                padding: 12px 0;
-            }
-
-            .price {
-                margin-top: 4px;
-            }
-
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        @media(max-width:620px){
+            .page-title{font-size:30px;}
+            .card{padding:18px;}
+            .item{flex-direction:column;padding:13px 0;}
+            .price{margin-top:5px;}
+            .menu-grid{grid-template-columns:repeat(2,1fr);}
         }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1 class="page-title">Sensory Garden MENU</h1>
-    <p class="page-subtitle">— DRINK LIST —</p>
-    <div class="jungle-bar"></div>
+    <h1 class="page-title">Acme</h1>
+    <p class="page-subtitle">Meet me at Acme — Drink Menu</p>
+    <div class="divider-line"></div>
 
     <div class="menu-grid">
         <button class="cat-btn active" onclick="showCat('member')">会员充值</button>
-        <button class="cat-btn" onclick="showCat('wineSet')">葡萄酒 · 三瓶套</button>
-        <button class="cat-btn" onclick="showCat('champagne')">香槟</button>
+        <button class="cat-btn" onclick="showCat('tasting')">麦卡伦品鉴(20ML)</button>
         <button class="cat-btn" onclick="showCat('whisky')">威士忌</button>
-        <button class="cat-btn" onclick="showCat('cognac')">干邑</button>
         <button class="cat-btn" onclick="showCat('tequila')">龙舌兰</button>
+        <button class="cat-btn" onclick="showCat('cognac')">干邑</button>
         <button class="cat-btn" onclick="showCat('gin')">金酒</button>
-        <button class="cat-btn" onclick="showCat('whiteWine')">白葡萄酒</button>
-        <button class="cat-btn" onclick="showCat('redWine')">红葡萄酒</button>
+        <button class="cat-btn" onclick="showCat('champagne')">香槟</button>
+        <button class="cat-btn" onclick="showCat('whitewine')">白葡萄酒</button>
+        <button class="cat-btn" onclick="showCat('redwine')">红葡萄酒</button>
+        <button class="cat-btn" onclick="showCat('cocktail')">鸡尾酒</button>
+        <button class="cat-btn" onclick="showCat('notice')">酒水寄存须知</button>
     </div>
 
     <!-- 会员充值 -->
     <div id="member" class="cat-page active">
         <div class="card">
-            <h2>会员充值</h2>
-            <div class="item"><div class="name">充值卡 赠：轩尼诗VSOP 1瓶 / 马爹利名士 1瓶</div><div class="price">—</div></div>
-            <div class="item"><div class="name">充值卡 赠：轩尼诗X.O 1瓶 / 马爹利X.O 1瓶</div><div class="price">—</div></div>
-            <div class="item"><div class="name">充值卡 赠：轩尼诗X.X.O 1瓶 / 马爹利X.X.O 1瓶</div><div class="price">—</div></div>
-            <div class="item"><div class="name">充值卡 赠：轩尼诗百乐廷 1瓶</div><div class="price">—</div></div>
-            <div class="item"><div class="name">充3万 赠5万额度</div><div class="price">—</div></div>
-            <div class="item"><div class="name">充50万 赠10万额度</div><div class="price">—</div></div>
+            <h2>ACME VALUE CARD 会员充值</h2>
+            <div class="item"><div class="name">¥10,000卡<div class="sub-text">赠 轩尼诗VSOP 1瓶 或 马爹利名士 1瓶</div></div><div class="price">—</div></div>
+            <div class="item"><div class="name">¥30,000卡<div class="sub-text">赠 轩尼诗X.O 1瓶 或 马爹利X.O. 1瓶</div></div><div class="price">—</div></div>
+            <div class="item"><div class="name">¥50,000卡<div class="sub-text">赠 轩尼诗X.X.O 1瓶 或 马爹利X.X.O 1瓶</div></div><div class="price">—</div></div>
+            <div class="item"><div class="name">¥100,000卡<div class="sub-text">赠 轩尼诗百乐廷1 瓶</div></div><div class="price">—</div></div>
+            <div class="item"><div class="name">¥300,000卡<div class="sub-text">赠 路易十三 1 瓶</div></div><div class="price">—</div></div>
+            <div class="item"><div class="name">¥500,000卡<div class="sub-text">赠 10 万 Buy 500,000 member card get 100,000 free</div></div><div class="price">—</div></div>
         </div>
     </div>
 
-    <!-- 葡萄酒 · 三瓶套 -->
-    <div id="wineSet" class="cat-page">
+    <!-- 麦卡伦品鉴20ML -->
+    <div id="tasting" class="cat-page">
         <div class="card">
-            <h2>葡萄酒 · 三瓶套</h2>
-            <div class="item"><div class="name">杰卡斯白葡萄酒 x3<div class="sub">Jacob's Creek WMS Chardonnay</div></div><div class="price">¥1600</div></div>
-            <div class="item"><div class="name">新西兰仙女湾马尔堡长相思白葡萄酒 x3<div class="sub">Fairy Bay Marlborough Sauvignon Blanc</div></div><div class="price">¥2500</div></div>
-            <div class="item"><div class="name">阿贝王子雷司令白葡萄酒 x3<div class="sub">Domaines Schlumberger Riesling Les Princes Abbes</div></div><div class="price">¥2580</div></div>
-            <div class="item"><div class="name">朗维尔赤霞红葡萄酒 x3<div class="sub">Longview Macclesfield Cabernet Sauvignon</div></div><div class="price">¥2580</div></div>
-            <div class="item"><div class="name">云雾之湾长相思白葡萄酒<div class="sub">Cloudy Bay Sauvignon Blanc</div></div><div class="price">¥2580</div></div>
-            <div class="item"><div class="name">云雾之湾黑品乐红葡萄酒<div class="sub">Cloudy Bay Pinot Noir</div></div><div class="price">¥2580</div></div>
-            <div class="item"><div class="name">圣布利斯酒庄庞特干红葡萄酒 x3<div class="sub">Chateau Pontet Saint Brice</div></div><div class="price">¥3080</div></div>
-        </div>
-    </div>
-
-    <!-- 香槟 -->
-    <div id="champagne" class="cat-page">
-        <div class="card">
-            <h2>香槟</h2>
-            <div class="item"><div class="name">巴黎之花<div class="sub">Perrier Jouet Grand Brut</div></div><div class="price">¥1780 / 瓶 · ¥5200 / 3瓶</div></div>
-            <div class="item"><div class="name">酩悦香槟 PHARRELL WILLIAMS 联名限定版<div class="sub">Moet & Chandom Brut Imperial Naked Bottles</div></div><div class="price">¥1980 / 瓶 · ¥5800 / 3瓶</div></div>
-            <div class="item"><div class="name">酩悦蜜露粉红<div class="sub">Moet & Chandon N.I.R</div></div><div class="price">¥2880 / 瓶 · ¥8500 / 3瓶</div></div>
-            <div class="item"><div class="name">夜光香槟王<div class="sub">Dom Perignon</div></div><div class="price">¥5980 / 瓶 · ¥16800 / 3瓶</div></div>
-            <div class="item"><div class="name">巴黎之花美丽时光夜光版<div class="sub">Perrier Jouet Belle Epoque</div></div><div class="price">¥7880</div></div>
-            <div class="item"><div class="name">夜光粉红香槟王<div class="sub">Dom Perignon Rose</div></div><div class="price">¥9880 / 瓶 · ¥28800 / 3瓶</div></div>
-            <div class="item"><div class="name">香槟王 P2<div class="sub">Dom Perignon P2</div></div><div class="price">¥12800</div></div>
-            <div class="item"><div class="name">巴黎之花美丽时光白中白<div class="sub">Perrier Jouet Belle Epoque Blanc de Blancs</div></div><div class="price">¥13800</div></div>
+            <h2>麦卡伦尊享年份之旅 MACALLAN AGED ELEGANCE JOURNEY</h2>
+            <div class="item">
+                <div class="name">麦卡伦12 年 单桶 20ML<div class="sub-text">丝滑柔顺,散发苹果､香草与橡木的清新香气,口感平衡,余韵温暖。ABV: 40%<br>Macallan 12 year single cask 20ml</div></div>
+                <div class="price">RMB 480</div>
+            </div>
+            <div class="item">
+                <div class="name">麦卡伦15 年 双桶 20ML<div class="sub-text">醇厚深邃,带有太妃糖､干果与辛香料的浓郁层次,口感圆润,余味悠长。ABV: 43%<br>Macallan 15 year double cask 20ml</div></div>
+                <div class="price">—</div>
+            </div>
+            <div class="item">
+                <div class="name">麦卡伦18 年 单桶 20ML<div class="sub-text">奢华浓郁,融合黑巧克力､橙皮与雪松木的复杂风味,口感如丝绒般顺滑,余韵深沉。ABV: 43%<br>Macallan 18 year single cask 20ml</div></div>
+                <div class="price">—</div>
+            </div>
         </div>
     </div>
 
     <!-- 威士忌 -->
     <div id="whisky" class="cat-page">
         <div class="card">
-            <h2>威士忌 · 斯贝塞</h2>
-            <div class="item"><div class="name">格兰路思15年<div class="sub">The Glenrothes 15 year</div></div><div class="price">¥1980</div></div>
-            <div class="item"><div class="name">麦卡伦双雪莉桶12年<div class="sub">The Macallan Double Cask 12 years Old</div></div><div class="price">¥1980</div></div>
-            <div class="item"><div class="name">麦卡伦经典雪莉桶12年<div class="sub">The Macallan Sherry Oak Cask 12 years Old</div></div><div class="price">¥2280 / 瓶 · ¥5980 / 3瓶</div></div>
-            <div class="item"><div class="name">麦卡伦15年双桶<div class="sub">Macallan 15 year</div></div><div class="price">¥4280</div></div>
-            <div class="item"><div class="name">麦卡伦皓钻单一麦芽威士忌<div class="sub">Macallan Rare Cask</div></div><div class="price">¥6980</div></div>
-            <div class="item"><div class="name">麦卡伦双桶18年<div class="sub">The Macallan Double Cask 18 year</div></div><div class="price">¥9880</div></div>
-            <div class="item"><div class="name">麦卡伦单桶18年<div class="sub">The Macallan Sherry Oak Cask 18 year</div></div><div class="price">¥12800</div></div>
+            <h2>WHISKY · SPEYSIDE</h2>
+            <div class="item"><div class="name">格兰路思15 年 The Glenrothes 15 Years Old</div><div class="price">1980</div></div>
+            <div class="item"><div class="name">麦卡伦双雪莉桶12 年 The Macallan Double Cask 12 Years Old</div><div class="price">1980 /1 Bottle 5880 /3 Bottle</div></div>
+            <div class="item"><div class="name">麦卡伦经典雪莉桶12 年 The Macallan Sherry Oak Cask 12 Years Old</div><div class="price">2280 /1 Bottle 6280 /3 Bottle</div></div>
+            <div class="item"><div class="name">麦卡伦盈钻 Macallan Litha</div><div class="price">2880 /1 Bottle 8380 /3 Bottle</div></div>
+            <div class="item"><div class="name">格兰杰18 年 Glenmorangie 18 yo Thelnfinita</div><div class="price">2880 /1 Bottle 8380 /3 Bottle</div></div>
+            <div class="item"><div class="name">格兰路思18 年 The Glenrothes 18 Years Old</div><div class="price">3280</div></div>
+            <div class="item"><div class="name">麦卡伦臻味啡凡 The Macallan Harmony Intense Arabica</div><div class="price">4080</div></div>
+            <div class="item"><div class="name">麦卡伦双雪莉桶15 年 The Macallan Double Cask 15 Years Old</div><div class="price">4980 14580 /3 Bottle</div></div>
+            <div class="item"><div class="name">麦卡伦皓钻 The Macallan Rare Cask</div><div class="price">6880</div></div>
+            <div class="item"><div class="name">麦卡伦双雪莉桶18 年 The Macallan Double Cask 18 Years Old</div><div class="price">9880</div></div>
+            <div class="item"><div class="name">麦卡伦经典雪莉桶18 年 The Macallan Sherry Oak Cask 18 Years Old</div><div class="price">12800</div></div>
+            <div class="item"><div class="name">麦卡伦明日经典·200 周年纪念款 The Macallan Time Space Mastery</div><div class="price">32800</div></div>
+            <div class="item"><div class="name">麦卡伦经典雪莉桶25 年 The Macallan Sherry Oak Cask 25 Years Old</div><div class="price">39800</div></div>
+            <div class="item"><div class="name">麦卡伦经典雪莉桶30 年 The Macallan Sherry Oak Cask 30 Years Old</div><div class="price">58800</div></div>
+            <div class="item"><div class="name">麦卡伦耀钻 The Macallan No.6</div><div class="price">58800</div></div>
+            <div class="item"><div class="name">麦卡伦璀璨 The Macallan M</div><div class="price">78800</div></div>
+            <div class="item"><div class="name">麦卡伦璀璨·黑 The Macallan M Black</div><div class="price">88800</div></div>
+            <div class="item"><div class="name">麦卡伦璀璨·金 The Macallan M Copper</div><div class="price">98800</div></div>
         </div>
-    </div>
-
-    <!-- 干邑 -->
-    <div id="cognac" class="cat-page">
         <div class="card">
-            <h2>干邑</h2>
-            <div class="item"><div class="name">马爹利名士<div class="sub">Martell Noblige</div></div><div class="price">¥1980 / 瓶 · ¥5800 / 3瓶</div></div>
-            <div class="item"><div class="name">轩尼诗 VSOP<div class="sub">Hennessy VSOP</div></div><div class="price">¥1980 / 瓶 · ¥5800 / 3瓶</div></div>
-            <div class="item"><div class="name">马爹利蓝带干邑<div class="sub">Martell Cordon Bleu</div></div><div class="price">¥4680 / 瓶 · ¥13580 / 3瓶</div></div>
-            <div class="item"><div class="name">马爹利 X.O.<div class="sub">Martell X.O. Supreme</div></div><div class="price">¥4980 / 瓶 · ¥13800 / 3瓶</div></div>
-            <div class="item"><div class="name">轩尼诗 X.O<div class="sub">Hennessy X.O</div></div><div class="price">¥4980 / 瓶 · ¥13800 / 3瓶</div></div>
-            <div class="item"><div class="name">马爹利尚选 X.X.O<div class="sub">Martell Chanteloup X.X.O</div></div><div class="price">¥9880 / 瓶 · ¥28800 / 3瓶</div></div>
-            <div class="item"><div class="name">轩尼诗 X.X.O.<div class="sub">Hennessy X.X.O.</div></div><div class="price">¥9880 / 瓶 · ¥28800 / 3瓶</div></div>
-            <div class="item"><div class="name">马爹利高希霸<div class="sub">Martell Cohiba</div></div><div class="price">¥15880</div></div>
-            <div class="item"><div class="name">轩尼诗百乐廷<div class="sub">Hennessy Paradis</div></div><div class="price">¥22800</div></div>
-            <div class="item"><div class="name">路易十三<div class="sub">Louis XIII</div></div><div class="price">¥51800</div></div>
-            <div class="item"><div class="name">轩尼诗李察<div class="sub">Hennessy Richard</div></div><div class="price">¥61800</div></div>
+            <h2>WHISKY · ISLAY</h2>
+            <div class="item"><div class="name">布赫拉迪15 年 Bruichladdich Classic laddie</div><div class="price">2280</div></div>
+            <div class="item"><div class="name">布赫拉迪18 年 Bruichladdich 18 years</div><div class="price">4280</div></div>
+            <div class="item"><div class="name">泥煤怪兽15.1 版 Octomore 15.1</div><div class="price">4980</div></div>
+        </div>
+        <div class="card">
+            <h2>WHISKY 其他</h2>
+            <div class="item"><div class="name">高原骑士12 年 Highland Park 12 years</div><div class="price">1200 /1 Bottle 3500 /3 Bottle</div></div>
+            <div class="item"><div class="name">穿岩十九-- 世界首款单一糯米威士忌 The CHUANYAN 19 Chinese Oryza Whisky</div><div class="price">3880</div></div>
         </div>
     </div>
 
     <!-- 龙舌兰 -->
     <div id="tequila" class="cat-page">
         <div class="card">
-            <h2>龙舌兰</h2>
-            <div class="item"><div class="name">培恩陈酿<div class="sub">Patron Añejo</div></div><div class="price">¥2380</div></div>
-            <div class="item"><div class="name">唐胡里奥1942<div class="sub">Don Julio 1942</div></div><div class="price">¥5980 / 瓶 · ¥17800 / 3瓶</div></div>
-            <div class="item"><div class="name">克斯阿苏尔青花瓷<div class="sub">Clase Azul Tequila</div></div><div class="price">¥6880</div></div>
+            <h2>TEQUILA</h2>
+            <div class="item"><div class="name">培恩陈酿 Patrón Añejo</div><div class="price">2380 /3 Bottle</div></div>
+            <div class="item"><div class="name">唐胡里奥1942 Don Julio 1942</div><div class="price">5980 /1 Bottle 17800 /3 Bottle</div></div>
+            <div class="item"><div class="name">克斯阿苏尔青花瓷 Clase Azul Añejo</div><div class="price">6880</div></div>
+        </div>
+    </div>
+
+    <!-- 干邑 -->
+    <div id="cognac" class="cat-page">
+        <div class="card">
+            <h2>COGNAC</h2>
+            <div class="item"><div class="name">马爹利名士 Martell Noblige</div><div class="price">1980 /1 Bottle 5880 /3 Bottle</div></div>
+            <div class="item"><div class="name">轩尼诗VSOP Hennessy VSOP</div><div class="price">1980 /1 Bottle 5880 /3 Bottle</div></div>
+            <div class="item"><div class="name">马爹利蓝带干邑 Martell Cordon Bleu</div><div class="price">4680 /1 Bottle 13580 /3 Bottle</div></div>
+            <div class="item"><div class="name">马爹利X.O. Martell X.O. Supreme</div><div class="price">4980 /1 Bottle 13980 /3 Bottle</div></div>
+            <div class="item"><div class="name">轩尼诗X.O Hennessy X.O</div><div class="price">4980 /1 Bottle 13980 /3 Bottle</div></div>
+            <div class="item"><div class="name">轩尼诗X.O La Carafe 联名限量款 Hennessy X.O La Carafe</div><div class="price">6880 /1 Bottle 19800 /3 Bottle</div></div>
+            <div class="item"><div class="name">马爹利尚选X.X.O Martell Chanteloup X.X.O</div><div class="price">— /1 Bottle 28800 /3 Bottle</div></div>
+            <div class="item"><div class="name">轩尼诗X.X.O Hennessy X.X.O</div><div class="price">— /1 Bottle 28800 /3 Bottle</div></div>
+            <div class="item"><div class="name">马爹利高希霸 Martell Cohiba</div><div class="price">15880</div></div>
+            <div class="item"><div class="name">轩尼诗百乐廷 Hennessy Paradis</div><div class="price">22800</div></div>
+            <div class="item"><div class="name">路易十三 Louis XIII</div><div class="price">51800</div></div>
+            <div class="item"><div class="name">轩尼诗李察 Hennessy Richard</div><div class="price">61800</div></div>
         </div>
     </div>
 
     <!-- 金酒 -->
     <div id="gin" class="cat-page">
         <div class="card">
-            <h2>金酒</h2>
-            <div class="item"><div class="name">诺迪思大西洋金酒<div class="sub">Nordés GIn</div></div><div class="price">¥1380</div></div>
-            <div class="item"><div class="name">猴王47黑森林干金酒<div class="sub">Monkey 47 Dry Gin</div></div><div class="price">¥1380</div></div>
+            <h2>GIN</h2>
+            <div class="item"><div class="name">猴王47 黑森林干金酒风味配制酒 Monkey 47 Dry Gin</div><div class="price">1380 /1 Bottle</div></div>
+            <div class="item"><div class="name">诺迪思大西洋金酒 Nordes Gin</div><div class="price">1380 /1 Bottle</div></div>
+        </div>
+    </div>
+
+    <!-- 香槟 -->
+    <div id="champagne" class="cat-page">
+        <div class="card">
+            <h2>CHAMPAGNE</h2>
+            <div class="item"><div class="name">酩悦香槟PHARRELLWILLIAMS 联名限定版 Moet & Chandon BRUT IMPÉRIAL NAKED BOTTLES</div><div class="price">1980 /1 Bottle 5880 /3 Bottle</div></div>
+            <div class="item"><div class="name">巴黎之花白中白 Perrier‑Jouët Blanc de Blancs</div><div class="price">2680 /1 Bottle 6980 /3 Bottle</div></div>
+            <div class="item"><div class="name">酩悦蜜露粉红 Moet & Chandon N.I.R</div><div class="price">2880 /1 Bottle 8500 /3 Bottle</div></div>
+            <div class="item"><div class="name">夜光香槟王 Dom Perignon</div><div class="price">5980 /1 Bottle 16800 /3 Bottle</div></div>
+            <div class="item"><div class="name">巴黎之花美丽时光夜光版 Perrier‑Jouët Belle Epoque Luminous</div><div class="price">8880 /1 Bottle 25880 /3 Bottle</div></div>
+            <div class="item"><div class="name">香槟王P2 Dom Perignon P2</div><div class="price">12800</div></div>
+            <div class="item"><div class="name">巴黎之花美丽时光白中白 Perrier‑Jouët Belle Epoque Blanc de Blancs</div><div class="price">13800</div></div>
         </div>
     </div>
 
     <!-- 白葡萄酒 -->
-    <div id="whiteWine" class="cat-page">
+    <div id="whitewine" class="cat-page">
         <div class="card">
-            <h2>白葡萄酒 · 新世界</h2>
-            <div class="item"><div class="name">云雾之湾长相思白葡萄酒<div class="sub">Cloudy Bay Sauvignon Blanc</div></div><div class="price">¥1080</div></div>
-            <div class="item"><div class="name">阿贝王子雷司令干白<div class="sub">Domaines Schlumberger Riesling Les Princes Abbes</div></div><div class="price">¥1080</div></div>
-            <div class="item"><div class="name">阿提斯锡安干白葡萄酒<div class="sub">Attis Xion White</div></div><div class="price">¥1280</div></div>
-            <div class="item"><div class="name">螺月圣克莱干白葡萄酒<div class="sub">Jean Marc Brocard Chablis</div></div><div class="price">¥1380</div></div>
-            <div class="item"><div class="name">阿布里达布蕾干白<div class="sub">Orlando Abrigo d’amblé sauvignon</div></div><div class="price">¥1580</div></div>
-            <div class="item"><div class="name">科迪埃世家布衣·飞仙老藤干白<div class="sub">Domaine Cordier “Vieilles Vignes” Pouilly Fuisse AOC</div></div><div class="price">¥2280</div></div>
-            <div class="item"><div class="name">伊达西西里干白葡萄酒<div class="sub">Idda Sicilia White</div></div><div class="price">¥2680</div></div>
+            <h2>WHITE WINE</h2>
+            <div class="item"><div class="name">爱丽舍桃红葡萄酒 Elysée Rosé</div><div class="price">500 /1 Bottle 1200 /3 Bottle</div></div>
+            <div class="item"><div class="name">伦马克经典莎当妮干白 Renmark Creek Chardonnay</div><div class="price">600 /1 Bottle 1500 /3 Bottle</div></div>
+            <div class="item"><div class="name">仙女湾马尔堡长相思干白葡萄酒 Fairy Bay Marlborough Sauvignon Blanc</div><div class="price">800 /1 Bottle 2000 /3 Bottle</div></div>
+            <div class="item"><div class="name">天鹅堡雷司令干白葡萄酒 Schloll des Schwans Riesling Trocken</div><div class="price">1000 /1 Bottle 2600 /3 Bottle</div></div>
+            <div class="item"><div class="name">变色熊半甜白 Color Bear Semi‑Sweet White Wine</div><div class="price">1200 /1 Bottle 3500 /3 Bottle</div></div>
+            <div class="item"><div class="name">云雾之湾长相思白葡萄酒 Cloudy Bay Sauvignon Blanc</div><div class="price">1300 /1 Bottle</div></div>
+            <div class="item"><div class="name">嗨登马尔堡长相思白葡萄酒 Babich Hidden Marlborough Sauvignon Blanc</div><div class="price">1500 /1 Bottle 4000 /3 Bottle</div></div>
+            <div class="item"><div class="name">逃牛岭初叙桃红 Runaway Cow Whisper Rosé</div><div class="price">2200 /1 Bottle</div></div>
+            <div class="item"><div class="name">帝格瑞鯨喜MAX 半干白葡萄酒1.5L Degree Surprise Max White Blend 1.5L</div><div class="price">1200 /1 Bottle</div></div>
+            <div class="item"><div class="name">酩颂悦享干白葡萄酒 Château Mongiron Prior Blanc, Bordeaux</div><div class="price">1300 /1 Bottle 3500 /3 Bottle</div></div>
+            <div class="item"><div class="name">瑞恩酒园勃艮第夏布利白葡萄酒 Domaine Régnard Chablis</div><div class="price">1500 /1 Bottle 4000 /3 Bottle</div></div>
+            <div class="item"><div class="name">拉赫希夏布利一级园 Domaine Laroche Chablis Premier Cru</div><div class="price">2200 /1 Bottle</div></div>
+            <div class="item"><div class="name">西班牙里奥哈契约窖藏白 El Pacto Blanco Reserva, Rioja</div><div class="price">2600 /1 Bottle</div></div>
+            <div class="item"><div class="name">皮盖特酒庄蒙蝶莉老藤干白葡萄酒 Domaine Piguet‑Chouet Monthélie Blanc Vieilles Vignes</div><div class="price">3600 /1 Bottle</div></div>
         </div>
     </div>
 
     <!-- 红葡萄酒 -->
-    <div id="redWine" class="cat-page">
+    <div id="redwine" class="cat-page">
         <div class="card">
-            <h2>红葡萄酒</h2>
-            <div class="item"><div class="name">云雾之湾黑品乐红葡萄酒<div class="sub">Cloudy Bay Pinot Noir</div></div><div class="price">¥1080</div></div>
-            <div class="item"><div class="name">朗维尔赤霞珠干红<div class="sub">Longview Macclesfield Cabernet Sauvignon</div></div><div class="price">¥1080</div></div>
-            <div class="item"><div class="name">圣布利斯酒庄庞特干红<div class="sub">Château Pontet Saint Bric</div></div><div class="price">¥1280</div></div>
-            <div class="item"><div class="name">杜克霍恩美乐干红<div class="sub">Duckhorn Merlot Red</div></div><div class="price">¥1980</div></div>
-            <div class="item"><div class="name">红顶鹤西拉干红<div class="sub">Turkey Flat Shiraz</div></div><div class="price">¥2180</div></div>
-            <div class="item"><div class="name">爱德华·德洛内夜丘村康博干红<div class="sub">Edouard Delaunay Cote de Nuits Village Les Combes Red</div></div><div class="price">¥2180</div></div>
-            <div class="item"><div class="name">阿尔多孔特诺孔卡特斯勒干红<div class="sub">Aldo Conterno Barbera d'Alba Conca Tre Pile</div></div><div class="price">¥2680</div></div>
+            <h2>RED WINE</h2>
+            <div class="item"><div class="name">酩颂酒庄干红葡萄酒 Château Mongiron Rouge</div><div class="price">800 /1 Bottle 1800 /3 Bottle</div></div>
+            <div class="item"><div class="name">瑞恩酒园勃艮第山丘红葡萄酒 Domaine Régnard Bourgogne Pinot Noir</div><div class="price">1200 /1 Bottle 3200 /3 Bottle</div></div>
+            <div class="item"><div class="name">澳宝庄园丝绒礼炮希拉红葡萄酒 Opal Estate Velvet Salute Shiraz</div><div class="price">1300 /1 Bottle 3500 /3 Bottle</div></div>
+            <div class="item"><div class="name">博若济贫院庄园勃艮第佳美干红葡萄酒 Hospices de Beaujeu Bourgogne Gamay</div><div class="price">1500 /1 Bottle</div></div>
+            <div class="item"><div class="name">格兰苏赤霞珠1L Grand Sud Cabernet Sauvignon 1L</div><div class="price">1800 /1 Bottle</div></div>
+            <div class="item"><div class="name">西班牙豪酒干红葡萄酒 Hao Spanish Tinto Red Wine</div><div class="price">2000 /1 Bottle</div></div>
+            <div class="item"><div class="name">布夏父子首席黑皮诺红葡萄酒 Bouchard Aîné & Fils Bourgogne Pinot Noir</div><div class="price">2200 /1 Bottle</div></div>
+            <div class="item"><div class="name">博若济贫院庄园朱丽娜佳美干红葡萄酒 Hospices de Beaujeu Juliénas</div><div class="price">2200 /1 Bottle</div></div>
+            <div class="item"><div class="name">吉诺托斯卡纳红葡萄酒 Barbanera "Gigino" Toscana Rosso IGT</div><div class="price">3000 /1 Bottle</div></div>
+            <div class="item"><div class="name">宝尚酒园哲维瑞‑香贝丹红葡萄酒 Bouchard Père & Fils Gevrey‑Chambertin</div><div class="price">8000 /1 Bottle</div></div>
+            <div class="item"><div class="name">青春万岁脱醇葡萄汁 Viva Youth Dealcoholized Grape Juice</div><div class="price">500 /1 Bottle</div></div>
         </div>
     </div>
 
-    <p class="footer-note">— Sensory Garden —</p>
+    <!-- 鸡尾酒 -->
+    <div id="cocktail" class="cat-page">
+        <div class="card">
+            <h2>SPECIAL COCKTAILS 特调鸡尾酒 RMB 130</h2>
+            <div class="item"><div class="name">凤梨酸 PINEAPPLE SOUR<div class="sub-text">15%｜黑麦威士忌､新鲜凤梨､新鲜青柠汁､单一糖浆</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">桃香流光 VANILLA PEACH GLOW<div class="sub-text">24%｜琴酒､苦艾酒､桃子水果酒､金万利､新鲜柠檬汁､糖浆､2‑3 滴橙味苦精</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">古老辉耀 OLD FASHIONED VARIANT<div class="sub-text">18.5%｜黑麦威士忌,杜林标利口酒,DOM 酒,甜味美思,苦精</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">星光ACME STARLIT ACME<div class="sub-text">12.8%｜朗姆酒､三干橙味酒､新鲜杨桃､新鲜凤梨､新鲜柠檬汁､单一糖浆</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">红丝绒 RED VELVET<div class="sub-text">24%｜红味美思､黑麦威士忌､波本威士忌､路萨朵樱桃 ､橙味苦精 ､樱桃汁</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">苦尽柑来 BITTER CITRUS<div class="sub-text">24%｜金酒､苦瓜汁､青柠汁､青瓜糖浆､接骨木花､咸柠檬糖浆</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">杏仁豆腐 ALMOND YOGURT<div class="sub-text">15%｜老酸奶､杏仁利口､杏仁白兰地､马利宝､柠檬汁､利莱白</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">洛神 ROSELLE<div class="sub-text">24%｜洛神花柑曼怡､柠檬汁､金酒､金巴利､菠萝汁､单糖</div></div><div class="price">130</div></div>
+        </div>
+        <div class="card">
+            <h2>CLASSIC COCKTAILS 经典鸡尾酒 RMB 130</h2>
+            <div class="item"><div class="name">威士忌酸 WHISKEY SOUR<div class="sub-text">18.8%｜美格波本威士忌､新鲜柠檬汁､无菌蛋清液､单一糖浆</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">古典鸡尾酒 OLD FASHIONED<div class="sub-text">39.8%｜美格波本威士忌､苦精､苏达､柠檬皮装饰</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">曼哈顿 MANHATTAN<div class="sub-text">31.7%｜美格波本威士忌､甜味美思､安哥斯图拉苦精､樱桃装饰</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">芒果玛格丽特 MANGO MARGARITA<div class="sub-text">22%｜新鲜芒果,龙舌兰,金万利,新鲜柠檬汁,单糖</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">干马提尼 DRY MARTINI<div class="sub-text">39.2%｜巍城金酒, 干味美思,橄榄或柠檬皮装饰</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">尼格罗尼 NEGRONI<div class="sub-text">28.9%｜巍城金酒,甜味美思,金巴利苦酒,橙皮</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">吉姆雷特 GIMLET<div class="sub-text">24%｜巍城金酒, 新鲜柠檬汁,单一糖浆,柠檬片</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">莫斯科骡子 MOSCOW MULE<div class="sub-text">15%｜KETEL ONE 伏特加､姜啤､新鲜青柠汁､青柠片装饰</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">桃之夭夭 PEACH BLUSH<div class="sub-text">15%｜金酒, 桃子利口酒,君度,凤梨汁,单一糖浆,红石榴糖浆</div></div><div class="price">130</div></div>
+            <div class="item"><div class="name">苹果杰克 APPLEJACK<div class="sub-text">24%｜凤梨汁､单一糖浆､君度､柠檬汁､美格威士忌､白兰地､酸苹果利口酒</div></div><div class="price">130</div></div>
+        </div>
+        <div class="notice-block">
+            <strong>备注：</strong>卡座区域需另加10%服务费 (10% SERVICE FEE WILL BE ADDED FOR THE BOOTH AREA)
+        </div>
+    </div>
+
+    <!-- 寄存须知 -->
+    <div id="notice" class="cat-page">
+        <div class="card">
+            <h2>酒水寄存须知 Liquor Storage Notice</h2>
+            <div class="notice-block">
+                <p>1. 免费存酒有效期 30 天,到期前可续存,将短信提醒。<br>Complimentary liquor storage is valid for 30 days. Renewal is available before expiry, and a text message reminder will be sent.</p>
+                <br>
+                <p>2. 逾期未续存 / 取酒,视为放弃保管,本店不再留存。<br>Failure to renew or retrieve stored liquor by the deadline will be deemed as forfeiture of storage, and the establishment will no longer retain the items.</p>
+                <br>
+                <p>3. 寄存即同意本规则。<br>Storing liquor constitutes agreement to these terms.</p>
+            </div>
+        </div>
+    </div>
+
+    <p class="footer-note">— Meet me at Acme —</p>
 </div>
 
 <script>
     function showCat(catId) {
-        document.querySelectorAll(".cat-page").forEach(p => {
-            p.classList.remove("active");
-        });
-        document.querySelectorAll(".cat-btn").forEach(b => {
-            b.classList.remove("active");
-        });
-
+        document.querySelectorAll(".cat-page").forEach(p => { p.classList.remove("active"); });
+        document.querySelectorAll(".cat-btn").forEach(b => { b.classList.remove("active"); });
         document.getElementById(catId).classList.add("active");
         event.currentTarget.classList.add("active");
     }
 </script>
-
 </body>
 </html>
