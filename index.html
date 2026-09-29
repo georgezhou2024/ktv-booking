@@ -440,53 +440,45 @@
 </div>
 
 <!-- ========== PHGROUP 品牌介绍页面 ========== -->
-<div id="about-page" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;overflow-y:auto;">
-    <div style="max-width:680px;margin:0 auto;padding:40px 20px;color:#e8dcc8;">
-        <div style="text-align:center;margin-bottom:30px;">
-            <button onclick="hideAbout()" style="padding:8px 20px;background:transparent;color:#e8dcc8;border:1px solid #888;border-radius:8px;cursor:pointer;font-size:14px;">← 返回</button>
+<div id="about-page" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;overflow-y:auto;">
+    <div style="max-width:800px;margin:0 auto;">
+        <div style="position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);padding:12px;text-align:center;border-bottom:1px solid #333;">
+            <button onclick="hideAbout()" style="padding:8px 24px;background:transparent;color:#fff;border:1px solid #888;border-radius:8px;cursor:pointer;font-size:14px;">← 返回门店选择</button>
         </div>
-        <div style="text-align:center;margin-bottom:40px;">
-            <h1 style="font-size:32px;letter-spacing:6px;color:#fff;margin:0;">PH GROUP</h1>
-            <p style="color:#c9a876;letter-spacing:3px;margin-top:8px;">玩家俱乐部 · Brand Brochure</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">关于 PH GROUP</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">PH® 的诞生，横跨了整个第二代到第三代产品时代的过渡，从非主流商业进入到主流商圈，现在我们用更多元化更有延展性的内容，升级第四代产品，用俱乐部模式重新定义夜间娱乐方式。</p>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;margin-top:12px;">PH® GROUP 注重聚焦玩家体验、对娱乐内容做出更多内容扩展、打造真正有温度和归属感的场景、符合社交属性和单身经济、也为家人们提供更优质的服务。</p>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;margin-top:12px;">依然秉承有温度，有家规的体验，以大型俱乐部的模式，实现丰富玩家体验、从场景到功能性再到情绪价值的完善，进一步实现"玩在家里"的娱乐模式。</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">PH ROOM（5F）</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">全新 PH® 回归中式装修风格，整个穹顶环绕卫衣人雕塑，全新场景震撼呈现。结合了激光投影，打造了一个现代中式派对场景。拥有 43 个卡座和 6 个散台，还有一个夜店包房。</p>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;margin-top:10px;">全新 PH® 专属梅子酒吧台，4 款特调梅子气泡鸡尾酒，来自独家庄园的梅子原浆，搭配不同风味的水果，只有在 PH® 才能喝到的清爽版梅子酒。</p>
-            <p style="color:#888;font-size:12px;margin-top:10px;">PH® From Hiphop · More than Hiphop</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">EROS LIVE SHOW（5F）</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">当爱神厄洛斯射出弓箭，一场好戏开幕。EROS LIVE SHOW 以古希腊爱神之名，铸就现代欲望美学圣殿。以厄洛斯之箭为引，将黄金时代的浪漫精神与先锋艺术解构重组，在肌肤与光影的交错间，体验舞美中流动的极致浪漫，升维的感官史诗。</p>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;margin-top:10px;">品牌调性：艺术 | 性张力 | 复古先锋</p>
-            <p style="color:#c9a876;font-size:14px;margin-top:10px;font-style:italic;">Fall in Love. Fall into Play. 坠入爱河，即刻入戏。</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">SENSORY GARDEN 森三里（7F）</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">7 楼感官花园，中文名字"森三里"。城市空中植物园，整体绿植覆盖面积超过 50%；可移动玻璃棚顶可根据天气、温度开启或者关闭。</p>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;margin-top:10px;">卡座区域正中央位置是长达 20 米的桌子，可以承接聚会、晚宴、婚礼等需求。在城市空中植物园中提供奢华体验、高端酒水、顶尖配套服务。</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">ACME（6F）</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">Acme 意思为顶点、巅峰、极致。拥有全中国唯一一家麦卡伦官方指定吧台（The Macallan Spiritual Home），拥有整栋楼最奢华的体验，高端酒水，国内最顶尖的配套服务。</p>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;margin-top:10px;">吧台主要售卖麦卡伦单瓶威士忌和珍藏版限量酒水，以及精致新鲜鸡尾酒。由于能进入 6 楼的审核门槛特别高，所以能进入 Acme 是身份的象征，高级圈层的名片。</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">PH ROOM 包房（6F）</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">大隐隐于市，静谧意蕴，欢愉并存。十四间豪华包房，配套设施一应俱全。餐食、酒水、水烟，全方位代表顶级水准。精致包房体验，回家般的宾至如归。</p>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:28px;margin-bottom:20px;border:1px solid rgba(201,123,60,0.3);">
-            <h2 style="color:#c97b3c;font-size:20px;border-left:4px solid #c97b3c;padding-left:12px;margin-bottom:16px;">WOOD @ SENSORY GARDEN（7F）</h2>
-            <p style="line-height:1.8;font-size:14px;color:#d8c8b0;">WOOD 不只是一家餐厅，它是一处感官避世所。坐落于三里屯上空，脚下是潮流涌动的街区，远方是宏伟的国贸天际线。哲学根植于"火与木"的原始元素，定义了烹饪、氛围和灵魂。</p>
-        </div>
+        <img src="about/page-01.jpg" style="width:100%;display:block;" />
+        <img src="about/page-02.jpg" style="width:100%;display:block;" />
+        <img src="about/page-03.jpg" style="width:100%;display:block;" />
+        <img src="about/page-04.jpg" style="width:100%;display:block;" />
+        <img src="about/page-05.jpg" style="width:100%;display:block;" />
+        <img src="about/page-06.jpg" style="width:100%;display:block;" />
+        <img src="about/page-07.jpg" style="width:100%;display:block;" />
+        <img src="about/page-08.jpg" style="width:100%;display:block;" />
+        <img src="about/page-09.jpg" style="width:100%;display:block;" />
+        <img src="about/page-10.jpg" style="width:100%;display:block;" />
+        <img src="about/page-11.jpg" style="width:100%;display:block;" />
+        <img src="about/page-12.jpg" style="width:100%;display:block;" />
+        <img src="about/page-13.jpg" style="width:100%;display:block;" />
+        <img src="about/page-14.jpg" style="width:100%;display:block;" />
+        <img src="about/page-15.jpg" style="width:100%;display:block;" />
+        <img src="about/page-16.jpg" style="width:100%;display:block;" />
+        <img src="about/page-17.jpg" style="width:100%;display:block;" />
+        <img src="about/page-18.jpg" style="width:100%;display:block;" />
+        <img src="about/page-19.jpg" style="width:100%;display:block;" />
+        <img src="about/page-20.jpg" style="width:100%;display:block;" />
+        <img src="about/page-21.jpg" style="width:100%;display:block;" />
+        <img src="about/page-22.jpg" style="width:100%;display:block;" />
+        <img src="about/page-23.jpg" style="width:100%;display:block;" />
+        <img src="about/page-24.jpg" style="width:100%;display:block;" />
+        <img src="about/page-25.jpg" style="width:100%;display:block;" />
+        <img src="about/page-26.jpg" style="width:100%;display:block;" />
+        <img src="about/page-27.jpg" style="width:100%;display:block;" />
+        <img src="about/page-28.jpg" style="width:100%;display:block;" />
+        <img src="about/page-29.jpg" style="width:100%;display:block;" />
+        <img src="about/page-30.jpg" style="width:100%;display:block;" />
+        <img src="about/page-31.jpg" style="width:100%;display:block;" />
     </div>
 </div>
+
 <!-- ========== 酒水单主页面 ========== -->
 <div id="main-page" style="display: none;">
     <div class="back-bar">
