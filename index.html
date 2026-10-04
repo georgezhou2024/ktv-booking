@@ -1379,8 +1379,23 @@ function enterStore(storeKey) {
     
     // 渲染分类按钮
     renderTabs(data);
-    // 默认显示第一个分类
-    showCat(data.categories[0].id);
+    // 默认进入主页面分类网格（首项为房间/水烟等全屏板块时，不直接进入）
+    const firstCat = data.categories[0];
+    if (firstCat.id === 'rooms' || firstCat.id === 'shisha') {
+        showHome();
+    } else {
+        showCat(firstCat.id);
+    }
+}
+
+// 主页面：只显示分类网格，不进入任何分类
+function showHome() {
+    document.getElementById('menu-tabs').style.display = '';
+    document.getElementById('store-footer').style.display = '';
+    document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('menu-content').innerHTML =
+        '<div style="text-align:center;padding:70px 20px;opacity:0.4;font-size:13px;letter-spacing:4px;">请 选 择 分 类</div>';
+    window.scrollTo(0, 0);
 }
 
 function backToStore() {
@@ -1418,11 +1433,9 @@ function showCat(catId) {
     window.scrollTo(0, 0);
 }
 
-// 从房间/水烟全屏板块返回主分类网格
+// 从房间/水烟全屏板块返回主页面分类网格
 function backToCategories() {
-    const data = STORE_DATA[currentStore];
-    const firstMain = data.categories.find(c => c.id !== 'rooms' && c.id !== 'shisha') || data.categories[0];
-    showCat(firstMain.id);
+    showHome();
 }
 function showAbout(){
     document.getElementById('about-page').style.display='block';
