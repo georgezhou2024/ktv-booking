@@ -921,278 +921,85 @@ const STORE_DATA = {
                 </div>
             `,
             shisha: `
-                <style>
-                    .shisha-cat{text-align:center;padding:18px 0 12px;border-bottom:1px solid rgba(201,169,110,0.3);margin-bottom:16px;}
-                    .shisha-cat .en{font-family:Georgia,serif;font-size:22px;font-style:italic;color:#c9a96e;letter-spacing:2px;}
-                    .shisha-cat .cn{font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px;letter-spacing:4px;}
-                    .shisha-item{text-align:center;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
-                    .shisha-item:last-child{border-bottom:none;}
-                    .shisha-item .cn-name{font-size:18px;font-weight:600;color:#fff;letter-spacing:2px;}
-                    .shisha-item .en-name{font-family:Georgia,serif;font-size:17px;font-style:italic;color:#c9a96e;margin-top:4px;}
-                    .shisha-item .poem{font-size:12px;color:rgba(255,255,255,0.6);margin-top:6px;line-height:1.6;}
-                    .shisha-item .en-ing{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:1px;}
-                    .shisha-item .cn-ing{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;}
-                    .shisha-item .price{color:#c9a96e;font-weight:600;font-size:15px;margin-top:8px;}
-                    .shisha-note{font-size:11px;color:rgba(255,255,255,0.4);text-align:center;padding:10px 16px;line-height:1.6;}
-                </style>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Fruit</div><div class="cn">水果特调</div></div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「芒芒落日」</div>
-                        <div class="en-name">Sunset Mango</div>
-                        <div class="poem">热带果香在暮色中流动 融化夏日的浪漫</div>
-                        <div class="en-ing">MANGO / PINEAPPLE / PEACH</div>
-                        <div class="cn-ing">芒果 / 菠萝 / 桃子</div>
-                        <div class="price">¥368</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「莓焰热吻」</div>
-                        <div class="en-name">Tropical Flame</div>
-                        <div class="poem">芭乐与芒果点燃的火焰里 热吻融化冰与火</div>
-                        <div class="en-ing">GUAVA / STRAWBERRY / MANGO</div>
-                        <div class="cn-ing">芭乐 / 草莓 / 芒果</div>
-                        <div class="price">¥368</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「唇间野莓」</div>
-                        <div class="en-name">Berry Kisses</div>
-                        <div class="poem">混合莓果的香气入侵 一秒陷入暧昧</div>
-                        <div class="en-ing">STRAWBERRY / GRAPEFRUIT / RASPBERRY</div>
-                        <div class="cn-ing">草莓 / 葡萄柚 / 树莓</div>
-                        <div class="price">¥368</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「甜蜜圈套」</div>
-                        <div class="en-name">Sweet Ring Trap</div>
-                        <div class="poem">牛奶和焦糖滑过甜甜圈 落入甜蜜圈套</div>
-                        <div class="en-ing">BANANA DONUT / MILK / CARAMEL</div>
-                        <div class="cn-ing">香蕉甜甜圈 / 牛奶 / 焦糖</div>
-                        <div class="price">¥368</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「能量浪潮」</div>
-                        <div class="en-name">Power Surge</div>
-                        <div class="poem">强劲的夏日感袭来 果香滑过味蕾</div>
-                        <div class="en-ing">RED BULL / PINEAPPLE / WATERMELON</div>
-                        <div class="cn-ing">红牛 / 菠萝 / 西瓜</div>
-                        <div class="price">¥368</div>
-                    </div>
+                    <h2>SHISHA · FRUIT 水果特调 ¥368</h2>
+                    <div class="item"><div class="name">芒芒落日 Sunset Mango<div class="sub-text">热带果香在暮色中流动 融化夏日的浪漫 · MANGO/PINEAPPLE/PEACH · 芒果/菠萝/桃子</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">莓焰热吻 Tropical Flame<div class="sub-text">芭乐与芒果点燃的火焰里 热吻融化冰与火 · GUAVA/STRAWBERRY/MANGO · 芭乐/草莓/芒果</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">唇间野莓 Berry Kisses<div class="sub-text">混合莓果的香气入侵 一秒陷入暧昧 · STRAWBERRY/GRAPEFRUIT/RASPBERRY · 草莓/葡萄柚/树莓</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">甜蜜圈套 Sweet Ring Trap<div class="sub-text">牛奶和焦糖滑过甜甜圈 落入甜蜜圈套 · BANANA DONUT/MILK/CARAMEL · 香蕉甜甜圈/牛奶/焦糖</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">能量浪潮 Power Surge<div class="sub-text">强劲的夏日感袭来 果香滑过味蕾 · RED BULL/PINEAPPLE/WATERMELON · 红牛/菠萝/西瓜</div></div><div class="price">¥368</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Herbal</div><div class="cn">草本特调</div></div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「青柠仙踪」</div>
-                        <div class="en-name">Lemon Oasis</div>
-                        <div class="poem">仙人掌的绿意裹梨香 荒漠里突然降落的绿洲</div>
-                        <div class="en-ing">PEAR / CACTUS / LEMON</div>
-                        <div class="cn-ing">梨 / 仙人掌 / 柠檬</div>
-                        <div class="price">¥368</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「松雾谜林」</div>
-                        <div class="en-name">Pine Enigma</div>
-                        <div class="poem">松针与柠檬的冷冽雾气 藏匿覆盆子猩红的谜底</div>
-                        <div class="en-ing">PINE NEEDLE / LEMON / RASPBERRY</div>
-                        <div class="cn-ing">松针 / 柠檬 / 覆盆子</div>
-                        <div class="price">¥368</div>
-                    </div>
+                    <h2>SHISHA · HERBAL 草本特调 ¥368</h2>
+                    <div class="item"><div class="name">青柠仙踪 Lemon Oasis<div class="sub-text">仙人掌的绿意裹梨香 荒漠里突然降落的绿洲 · PEAR/CACTUS/LEMON · 梨/仙人掌/柠檬</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">松雾谜林 Pine Enigma<div class="sub-text">松针与柠檬的冷冽雾气 藏匿覆盆子猩红的谜底 · PINE NEEDLE/LEMON/RASPBERRY · 松针/柠檬/覆盆子</div></div><div class="price">¥368</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Flowers</div><div class="cn">花香特调</div></div>
-                    <div class="shisha-item">
-                        <div class="cn-name">「茉莉心事」</div>
-                        <div class="en-name">Jasmine Ripple</div>
-                        <div class="poem">茉莉开放少女般的青涩 酸甜掺杂荡起波澜</div>
-                        <div class="en-ing">JASMINE TEA / STRAWBERRY / LIME</div>
-                        <div class="cn-ing">茉莉花茶 / 草莓 / 酸橙</div>
-                        <div class="price">¥368</div>
-                    </div>
+                    <h2>SHISHA · FLOWERS 花香特调 ¥368</h2>
+                    <div class="item"><div class="name">茉莉心事 Jasmine Ripple<div class="sub-text">茉莉开放少女般的青涩 酸甜掺杂荡起波澜 · JASMINE TEA/STRAWBERRY/LIME · 茉莉花茶/草莓/酸橙</div></div><div class="price">¥368</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">¥428</div><div class="cn">系列</div></div>
-                    <div class="shisha-item">
-                        <div class="cn-name">1.「蜜桃盛宴」</div>
-                        <div class="en-name">Peach Fiesta</div>
-                        <div class="en-ing">WHITE WINE / PEACH / PASSION FRUIT / STRAWBERRY CREAM</div>
-                        <div class="cn-ing">白葡萄酒 / 桃子 / 百香果 / 草莓奶油</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">2.「童趣乐园」</div>
-                        <div class="en-name">Gummy Wonderland</div>
-                        <div class="en-ing">GUMMY BEARS / LEMON / BLACKCURRANT</div>
-                        <div class="cn-ing">小熊软糖 / 柠檬 / 黑加仑</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">3.「芝士风暴」</div>
-                        <div class="en-name">Cheesecake Storm</div>
-                        <div class="en-ing">LEMON / CHEESECAKE / VANILLA / CARAMEL</div>
-                        <div class="cn-ing">柠檬 / 芝士蛋糕 / 香草 / 焦糖</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">4.「泡泡乐园」</div>
-                        <div class="en-name">Bubble Land</div>
-                        <div class="en-ing">BUBBLE GUM / BANANA / PINEAPPLE / MINT</div>
-                        <div class="cn-ing">泡泡糖 / 香蕉 / 菠萝 / 薄荷</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">5.「金色宝藏」</div>
-                        <div class="en-name">Golden Treasure</div>
-                        <div class="en-ing">COFFEE / SAFFRON ICE CREAM / MILK</div>
-                        <div class="cn-ing">咖啡 / 藏红花冰激凌 / 牛奶</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">6.「绯色醺语」</div>
-                        <div class="en-name">Crimson Whisper</div>
-                        <div class="en-ing">POMEGRANATE / APEROL / RASPBERRY</div>
-                        <div class="cn-ing">石榴 / 阿佩罗酒 / 树莓</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">7.「异域风情」</div>
-                        <div class="en-name">Exotic Enchantment</div>
-                        <div class="en-ing">RASPBERRY / KIWI / MANGO / CHAMOMILE</div>
-                        <div class="cn-ing">覆盆子 / 猕猴桃 / 芒果 / 洋甘菊</div>
-                        <div class="price">¥428</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">8.「蜜桃奶茶」</div>
-                        <div class="en-name">Peach Milk Tea</div>
-                        <div class="en-ing">BLACK TEA / PEACH / MILK</div>
-                        <div class="cn-ing">红茶 / 桃子 / 牛奶</div>
-                        <div class="price">¥428</div>
-                    </div>
+                    <h2>SHISHA · ¥428 系列</h2>
+                    <div class="item"><div class="name">蜜桃盛宴 Peach Fiesta<div class="sub-text">WHITE WINE/PEACH/PASSION FRUIT/STRAWBERRY CREAM · 白葡萄酒/桃子/百香果/草莓奶油</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">童趣乐园 Gummy Wonderland<div class="sub-text">GUMMY BEARS/LEMON/BLACKCURRANT · 小熊软糖/柠檬/黑加仑</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">芝士风暴 Cheesecake Storm<div class="sub-text">LEMON/CHEESECAKE/VANILLA/CARAMEL · 柠檬/芝士蛋糕/香草/焦糖</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">泡泡乐园 Bubble Land<div class="sub-text">BUBBLE GUM/BANANA/PINEAPPLE/MINT · 泡泡糖/香蕉/菠萝/薄荷</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">金色宝藏 Golden Treasure<div class="sub-text">COFFEE/SAFFRON ICE CREAM/MILK · 咖啡/藏红花冰激凌/牛奶</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">绯色醺语 Crimson Whisper<div class="sub-text">POMEGRANATE/APEROL/RASPBERRY · 石榴/阿佩罗酒/树莓</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">异域风情 Exotic Enchantment<div class="sub-text">RASPBERRY/KIWI/MANGO/CHAMOMILE · 覆盆子/猕猴桃/芒果/洋甘菊</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">蜜桃奶茶 Peach Milk Tea<div class="sub-text">BLACK TEA/PEACH/MILK · 红茶/桃子/牛奶</div></div><div class="price">¥428</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Deus Perfume</div><div class="cn">¥488 系列</div></div>
-                    <div class="shisha-note">"灵感来自香水界的传奇成分，雪茄与香水的芳香，让你在水烟中获得精致的奢华体验"</div>
-                    <div class="shisha-item">
-                        <div class="cn-name">1. Last Season</div>
-                        <div class="en-ing">Leather / Vanilla / Incense</div>
-                        <div class="cn-ing">香草 / 焚香 / 皮革</div>
-                        <div class="price">¥488</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">2. Ganymede</div>
-                        <div class="en-ing">Citrus / Saffron</div>
-                        <div class="cn-ing">柑橘 / 藏红花</div>
-                        <div class="price">¥488</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">3. Psychedelic Love</div>
-                        <div class="en-ing">Flowers / Rose / Sandalwood / Bergamot</div>
-                        <div class="cn-ing">花香 / 玫瑰 / 檀香 / 佛手柑</div>
-                        <div class="price">¥488</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">4. Black Aoud</div>
-                        <div class="en-ing">Agarwood / Spicy / Amber</div>
-                        <div class="cn-ing">沉香 / 辛辣 / 琥珀</div>
-                        <div class="price">¥488</div>
-                    </div>
+                    <h2>SHISHA · DEUS PERFUME ¥488</h2>
+                    <div class="item"><div class="name">Last Season<div class="sub-text">Leather/Vanilla/Incense · 香草/焚香/皮革</div></div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">Ganymede<div class="sub-text">Citrus/Saffron · 柑橘/藏红花</div></div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">Psychedelic Love<div class="sub-text">Flowers/Rose/Sandalwood/Bergamot · 花香/玫瑰/檀香/佛手柑</div></div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">Black Aoud<div class="sub-text">Agarwood/Spicy/Amber · 沉香/辛辣/琥珀</div></div><div class="price">¥488</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Bonche</div><div class="cn">¥488 系列</div></div>
-                    <div class="shisha-note">"由雪茄叶制成，创造时保留雪茄叶的音符，我们为原料的香气感到自豪"</div>
-                    <div class="shisha-item"><div class="cn-name">佛手柑</div><div class="en-ing">Bergamot</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">奶香乌龙茶</div><div class="en-ing">Milk Oolong</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">芝麻</div><div class="en-ing">Sesame</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">柠檬</div><div class="en-ing">Lemon</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">咖啡</div><div class="en-ing">Coffee</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">葡萄柚</div><div class="en-ing">Grapefruit</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">威士忌</div><div class="en-ing">Whiskey</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">芝士蛋糕</div><div class="en-ing">Cheesecake</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">布朗尼</div><div class="en-ing">Brownie</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">薰衣草</div><div class="en-ing">Lavender</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">花生</div><div class="en-ing">Peanut</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">玉米</div><div class="en-ing">Corn</div><div class="price">¥488</div></div>
+                    <h2>SHISHA · BONCHE ¥488</h2>
+                    <div class="item"><div class="name">佛手柑 Bergamot</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">奶香乌龙茶 Milk Oolong</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">芝麻 Sesame</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">柠檬 Lemon</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">咖啡 Coffee</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">葡萄柚 Grapefruit</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">威士忌 Whiskey</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">芝士蛋糕 Cheesecake</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">布朗尼 Brownie</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">薰衣草 Lavender</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">花生 Peanut</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">玉米 Corn</div><div class="price">¥488</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Trofimoff's</div><div class="cn">¥488 系列</div></div>
-                    <div class="shisha-note">"来自圣彼得堡的手工制作烟料商，突出强度与自然性，没有多余的油脂和超载的香气"</div>
-                    <div class="shisha-item"><div class="cn-name">茉莉花</div><div class="en-ing">Jasmine</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">草莓</div><div class="en-ing">Strawberry</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">绿茶</div><div class="en-ing">Green Tea</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">青苹果</div><div class="en-ing">Green Apple</div><div class="price">¥488</div></div>
-                    <div class="shisha-item"><div class="cn-name">松针</div><div class="en-ing">Pine Needle</div><div class="price">¥488</div></div>
-                    <div class="shisha-note">*以上所有口味，可根据自己喜好的口味进行搭配</div>
+                    <h2>SHISHA · TROFIMOFF'S ¥488</h2>
+                    <div class="item"><div class="name">茉莉花 Jasmine</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">草莓 Strawberry</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">绿茶 Green Tea</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">青苹果 Green Apple</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">松针 Pine Needle</div><div class="price">¥488</div></div>
+                    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">*以上所有口味可根据喜好自由搭配</p>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Special Blend</div><div class="cn">¥688 特别调配 · Fruit Based</div></div>
-                    <div class="shisha-item">
-                        <div class="cn-name">1. 菠萝 PINEAPPLE</div>
-                        <div class="poem">烟料：橙子 + 芒果 + 洋甘菊 + 百香果</div>
-                        <div class="en-ing">TOBACCO: ORANGE / MANGO / CHAMOMILE / PASSION FRUIT</div>
-                        <div class="poem">壶底搭配：西瓜汁 + 花朵 + 荔枝装饰</div>
-                        <div class="en-ing">BASE: WATERMELON JUICE + FLOWERS + LYCHEE GARNISH</div>
-                        <div class="price">¥688</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">2. 火龙果 DRAGON FRUIT</div>
-                        <div class="poem">烟料：草莓冰淇淋 + 焦糖 + 华夫饼</div>
-                        <div class="en-ing">TOBACCO: STRAWBERRY ICE CREAM + CARAMEL + WAFFLE</div>
-                        <div class="poem">壶底搭配：粉色冰淇淋 + 草莓 + 白色鲜花装饰</div>
-                        <div class="en-ing">BASE: PINK ICE CREAM + STRAWBERRIES + WHITE FLOWER GARNISH</div>
-                        <div class="price">¥688</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">3. 西瓜杯 WATERMELON CUP</div>
-                        <div class="poem">烟料：蓝莓 + 西瓜 + 猕猴桃</div>
-                        <div class="en-ing">TOBACCO: BLUEBERRY + WATERMELON + KIWI</div>
-                        <div class="poem">壶底搭配：火龙果 + 薄荷 + 花朵 + 覆盆子冰沙</div>
-                        <div class="en-ing">BASE: DRAGON FRUIT + MINT + FLOWER + RASPBERRY SMOOTHIE</div>
-                        <div class="price">¥688</div>
-                    </div>
+                    <h2>SHISHA · SPECIAL BLEND 特别调配 ¥688</h2>
+                    <div class="item"><div class="name">菠萝 Pineapple<div class="sub-text">烟料：橙子+芒果+洋甘菊+百香果 · 壶底：西瓜汁+花朵+荔枝装饰</div></div><div class="price">¥688</div></div>
+                    <div class="item"><div class="name">火龙果 Dragon Fruit<div class="sub-text">烟料：草莓冰淇淋+焦糖+华夫饼 · 壶底：粉色冰淇淋+草莓+白花装饰</div></div><div class="price">¥688</div></div>
+                    <div class="item"><div class="name">西瓜杯 Watermelon Cup<div class="sub-text">烟料：蓝莓+西瓜+猕猴桃 · 壶底：火龙果+薄荷+花朵+覆盆子冰沙</div></div><div class="price">¥688</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Customized Edition</div><div class="cn">¥888 定制版</div></div>
-                    <div class="shisha-item">
-                        <div class="poem">1. 精选 Bonche、Deus Perfume、Trofimoff's 三大顶级烟料，自由搭配浓度与风味</div>
-                        <div class="poem">2. 多款 Maklaud 水烟壶任选其一</div>
-                        <div class="poem">3. 俄罗斯水烟师现场定制调配</div>
-                        <div class="price">¥888</div>
-                    </div>
+                    <h2>SHISHA · CUSTOMIZED 定制版 ¥888</h2>
+                    <div class="item"><div class="name">定制调配<div class="sub-text">精选Bonche/Deus Perfume/Trofimoff's三大顶级烟料自由搭配 + 多款Maklaud水烟壶任选 + 俄罗斯水烟师现场调配</div></div><div class="price">¥888</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Maklaud</div><div class="cn">¥9981 西游记系列 · 全球限量1套</div></div>
-                    <div class="shisha-note">
-                        Maklaud 品牌官方授权<br>
-                        Global Limited Edition of Only 1 Set<br>
-                        唐僧 · 孙悟空 · 猪八戒 · 沙僧<br><br>
-                        "一次享受4支独一无二的纯手工艺术水烟壶，自由搭配任选烟料、浓度与风味。包含 Bonche, Deus Perfume, Trofimoff's 三大顶级烟料，俄罗斯水烟师现场调配"<br><br>
-                        "每壶口味可换2-3次，整晚畅抽享受8-12个口味"
-                    </div>
-                    <div class="price" style="text-align:center;color:#c9a96e;font-weight:600;font-size:18px;padding:10px 0;">¥9981</div>
+                    <h2>MAKLAUD 西游记系列 ¥9981</h2>
+                    <div class="item"><div class="name">西游记系列（唐僧/孙悟空/猪八戒/沙僧）<div class="sub-text">全球限量1套 · 4支纯手工艺术水烟壶 · 每壶口味可换2-3次，整晚畅抽8-12个口味</div></div><div class="price">¥9981</div></div>
                 </div>
                 <div class="card">
-                    <div class="shisha-cat"><div class="en">Shisha Base Options</div><div class="cn">水烟壶底可供选择</div></div>
-                    <div class="shisha-item">
-                        <div class="cn-name">果汁底 Fruit Juice Base</div>
-                        <div class="en-ing">Watermelon / Green Grape / Red Date / Hawthorn / Pomegranate</div>
-                        <div class="cn-ing">西瓜 / 青提 / 红枣 / 山楂 / 石榴</div>
-                        <div class="price">+¥58</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">酒底 Alcohol Base</div>
-                        <div class="en-ing">Whisky / Dry White Riesling</div>
-                        <div class="cn-ing">威士忌 / 干白雷司令</div>
-                        <div class="price">+¥88</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">茶底 Tea Base</div>
-                        <div class="en-ing">Jasmine / Black Tea</div>
-                        <div class="cn-ing">茉莉花茶 / 红茶</div>
-                        <div class="price">+¥88</div>
-                    </div>
-                    <div class="shisha-item">
-                        <div class="cn-name">其他 Others · 玉米汁</div>
-                        <div class="en-ing">Corn</div>
-                        <div class="price">+¥68</div>
-                    </div>
+                    <h2>SHISHA BASE 水烟壶底选择</h2>
+                    <div class="item"><div class="name">果汁底 Fruit Juice Base<div class="sub-text">西瓜/青提/红枣/山楂/石榴</div></div><div class="price">+¥58</div></div>
+                    <div class="item"><div class="name">酒底 Alcohol Base<div class="sub-text">威士忌/干白雷司令</div></div><div class="price">+¥88</div></div>
+                    <div class="item"><div class="name">茶底 Tea Base<div class="sub-text">茉莉花茶/红茶</div></div><div class="price">+¥88</div></div>
+                    <div class="item"><div class="name">玉米汁 Corn Juice</div><div class="price">+¥68</div></div>
                 </div>
             `,
             notice: `
