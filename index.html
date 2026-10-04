@@ -748,6 +748,7 @@ const STORE_DATA = {
             { id: 'vodka', name: '伏特加' },
             { id: 'beer', name: '啤酒' },
             { id: 'softdrink', name: '软饮' },
+            { id: 'shisha', name: '水烟 SHISHA' },
             { id: 'notice', name: '酒水寄存须知' }
         ],
         content: {
@@ -917,6 +918,85 @@ const STORE_DATA = {
                     <div class="item"><div class="name">芙丝水 (挪威) Voss</div><div class="price">¥50 /瓶</div></div>
                     <div class="item"><div class="name">胜狮气泡水 (泰国) Singha Soda</div><div class="price">¥50 /瓶</div></div>
                     <div class="item"><div class="name">if椰子水 (泰国) if</div><div class="price">¥50 /瓶</div></div>
+                </div>
+            `,
+            shisha: `
+                <div class="card">
+                    <h2>¥368 水果/草本/花香特调</h2>
+                    <div class="item"><div class="name">芒芒落日 Sunset Mango<div class="sub-text">芒果/菠萝/桃子</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">莓焰热吻 Tropical Flame<div class="sub-text">芭乐/草莓/芒果</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">唇间野莓 Berry Kisses<div class="sub-text">草莓/葡萄柚/树莓</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">甜蜜圈套 Sweet Ring Trap<div class="sub-text">香蕉甜甜圈/牛奶/焦糖</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">能量浪潮 Power Surge<div class="sub-text">红牛/菠萝/西瓜</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">青柠仙踪 Lemon Oasis<div class="sub-text">梨/仙人掌/柠檬</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">松雾谜林 Pine Enigma<div class="sub-text">松针/柠檬/覆盆子</div></div><div class="price">¥368</div></div>
+                    <div class="item"><div class="name">茉莉心事 Jasmine Ripple<div class="sub-text">茉莉花茶/草莓/酸橙</div></div><div class="price">¥368</div></div>
+                </div>
+                <div class="card">
+                    <h2>¥428 系列</h2>
+                    <div class="item"><div class="name">蜜桃盛宴 Peach Fiesta<div class="sub-text">白葡萄酒/桃子/百香果/草莓奶油</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">童趣乐园 Gummy Wonderland<div class="sub-text">小熊软糖/柠檬/黑加仑</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">芝士风暴 Cheesecake Storm<div class="sub-text">柠檬/芝士蛋糕/香草/焦糖</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">泡泡乐园 Bubble Land<div class="sub-text">泡泡糖/香蕉/菠萝/薄荷</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">金色宝藏 Golden Treasure<div class="sub-text">咖啡/藏红花冰激凌/牛奶</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">绯色醺语 Crimson Whisper<div class="sub-text">石榴/阿佩罗酒/树莓</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">异域风情 Exotic Enchantment<div class="sub-text">覆盆子/猕猴桃/芒果/洋甘菊</div></div><div class="price">¥428</div></div>
+                    <div class="item"><div class="name">蜜桃奶茶 Peach Milk Tea<div class="sub-text">红茶/桃子/牛奶</div></div><div class="price">¥428</div></div>
+                </div>
+                <div class="card">
+                    <h2>¥488 顶级烟料 · Deus Perfume</h2>
+                    <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">灵感来自香水界传奇成分，雪茄与香水的芳香，精致奢华体验</p>
+                    <div class="item"><div class="name">Last Season<div class="sub-text">香草/焚香/皮革</div></div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">Ganymede<div class="sub-text">柑橘/藏红花</div></div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">Psychedelic Love<div class="sub-text">花香/玫瑰/檀香/佛手柑</div></div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">Black Aoud<div class="sub-text">沉香/辛辣/琥珀</div></div><div class="price">¥488</div></div>
+                </div>
+                <div class="card">
+                    <h2>¥488 · Bonche 雪茄叶系列</h2>
+                    <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">由雪茄叶制成，保留雪茄叶的独特音符</p>
+                    <div class="item"><div class="name">佛手柑 Bergamot</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">奶香乌龙茶 Milk Oolong</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">芝麻 Sesame</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">柠檬 Lemon</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">咖啡 Coffee</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">葡萄柚 Grapefruit</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">威士忌 Whiskey</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">芝士蛋糕 Cheesecake</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">布朗尼 Brownie</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">薰衣草 Lavender</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">花生 Peanut</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">玉米 Corn</div><div class="price">¥488</div></div>
+                </div>
+                <div class="card">
+                    <h2>¥488 · Trofimoff's 圣彼得堡手工烟料</h2>
+                    <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:10px;">突出强度与自然性，无多余油脂和超载香气</p>
+                    <div class="item"><div class="name">茉莉花 Jasmine</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">草莓 Strawberry</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">绿茶 Green Tea</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">青苹果 Green Apple</div><div class="price">¥488</div></div>
+                    <div class="item"><div class="name">松针 Pine Needle</div><div class="price">¥488</div></div>
+                    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;">*以上所有口味可根据喜好自由搭配</p>
+                </div>
+                <div class="card">
+                    <h2>¥688 Special Blend 特别调配 · Fruit Based</h2>
+                    <div class="item"><div class="name">菠萝 Pineapple<div class="sub-text">烟料：橙子+芒果+洋甘菊+百香果 / 壶底：西瓜汁+花朵+荔枝装饰</div></div><div class="price">¥688</div></div>
+                    <div class="item"><div class="name">火龙果 Dragon Fruit<div class="sub-text">烟料：草莓冰淇淋+焦糖+华夫饼 / 壶底：粉色冰淇淋+草莓+白花装饰</div></div><div class="price">¥688</div></div>
+                    <div class="item"><div class="name">西瓜杯 Watermelon Cup<div class="sub-text">烟料：蓝莓+西瓜+猕猴桃 / 壶底：火龙果+薄荷+花朵+覆盆子冰沙</div></div><div class="price">¥688</div></div>
+                </div>
+                <div class="card">
+                    <h2>¥888 Customized Edition 定制版</h2>
+                    <div class="item"><div class="name">定制调配<div class="sub-text">精选Bonche/Deus Perfume/Trofimoff's三大顶级烟料自由搭配 + 多款Maklaud水烟壶任选 + 俄罗斯水烟师现场调配</div></div><div class="price">¥888</div></div>
+                </div>
+                <div class="card">
+                    <h2>¥9981 Maklaud 西游记系列 · 全球限量1套</h2>
+                    <div class="item"><div class="name">西游记系列（唐僧/孙悟空/猪八戒/沙僧）<div class="sub-text">4支纯手工艺术水烟壶，自由搭配烟料浓度风味，含三大顶级烟料，俄罗斯水烟师现场调配，每壶口味可换2-3次，整晚畅抽8-12个口味</div></div><div class="price">¥9981</div></div>
+                </div>
+                <div class="card">
+                    <h2>水烟壶底可选 Shisha Base Options</h2>
+                    <div class="item"><div class="name">果汁底 Fruit Juice Base<div class="sub-text">西瓜/青提/红枣/山楂/石榴</div></div><div class="price">+¥58</div></div>
+                    <div class="item"><div class="name">酒底 Alcohol Base<div class="sub-text">威士忌/干白雷司令</div></div><div class="price">+¥88</div></div>
+                    <div class="item"><div class="name">茶底 Tea Base<div class="sub-text">茉莉花茶/红茶</div></div><div class="price">+¥88</div></div>
+                    <div class="item"><div class="name">玉米汁 Corn Juice</div><div class="price">+¥68</div></div>
                 </div>
             `,
             notice: `
