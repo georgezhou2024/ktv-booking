@@ -766,6 +766,7 @@ const STORE_DATA = {
                     .rd-photo{width:100%;border-radius:8px;cursor:pointer;display:block;}
                 </style>
                 <div id="rl-view">
+                    <div class="rd-back" onclick="backToCategories()">&#8592; 返回分类</div>
                     <div class="rl-floor">5F</div>
                     <div class="rl-grid">
                         <div class="rl-btn" onclick="showRoom('rooms/individual/5f-phclub-010.jpg','PH CLUB-010')"><span class="rl-num">PH CLUB-010</span><img src="rooms/individual/mic-icon.png" class="rl-mic"><div class="rl-hint">点击查看</div></div>
@@ -932,6 +933,7 @@ const STORE_DATA = {
                     .sh-cols .item{padding:8px 0;}
                 </style>
                 <div id="sh-list">
+                    <div class="sh-back" onclick="backToCategories()">&#8592; 返回分类</div>
                     <div class="sh-grid">
                         <div class="sh-btn" onclick="showShisha('fruit')"><span class="t">水果特调</span><span class="p">¥368</span></div>
                         <div class="sh-btn" onclick="showShisha('herbal')"><span class="t">草本特调</span><span class="p">¥368</span></div>
@@ -1399,15 +1401,28 @@ function renderTabs(data) {
 // 切换分类
 function showCat(catId) {
     const data = STORE_DATA[currentStore];
-    
+
+    // 房间、水烟为全屏独立板块：隐藏主分类网格与页脚，像独立主页
+    const isSubSection = catId === 'rooms' || catId === 'shisha';
+    document.getElementById('menu-tabs').style.display = isSubSection ? 'none' : '';
+    document.getElementById('store-footer').style.display = isSubSection ? 'none' : '';
+
     // 切换按钮高亮
     document.querySelectorAll('.cat-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.id === catId) btn.classList.add('active');
     });
-    
+
     // 切换内容
     document.getElementById('menu-content').innerHTML = data.content[catId];
+    window.scrollTo(0, 0);
+}
+
+// 从房间/水烟全屏板块返回主分类网格
+function backToCategories() {
+    const data = STORE_DATA[currentStore];
+    const firstMain = data.categories.find(c => c.id !== 'rooms' && c.id !== 'shisha') || data.categories[0];
+    showCat(firstMain.id);
 }
 function showAbout(){
     document.getElementById('about-page').style.display='block';
