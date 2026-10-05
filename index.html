@@ -494,7 +494,7 @@ let STORE_LIST = []; // 门店清单（data/stores.json，由 /admin 后台维�
 const DATA_READY = (async function(){
   try{
     STORE_LIST = await (await fetch('data/stores.json?t=' + Date.now())).json();
-    await Promise.all(STORE_LIST.map(async function(m){
+    await Promise.all(STORE_LIST.filter(function(m){return !m.hidden;}).map(async function(m){
       STORE_DATA[m.key] = await (await fetch('data/' + m.key + '.json?t=' + Date.now())).json();
     }));
     SHISHA_CONTENT = await (await fetch('data/shisha.json?t=' + Date.now())).json();
@@ -510,7 +510,7 @@ const DATA_READY = (async function(){
 
 // 根据门店清单动态渲染门店按钮
 function renderStoreButtons(){
-    document.getElementById('store-buttons').innerHTML = STORE_LIST.map(function(m){
+    document.getElementById('store-buttons').innerHTML = STORE_LIST.filter(function(m){return !m.hidden;}).map(function(m){
         return '<button class="store-btn" onclick="enterStore(\'' + m.key + '\')">' + m.name + '<p>' + (m.sub || '') + '</p></button>';
     }).join('');
 }
