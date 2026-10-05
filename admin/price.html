@@ -172,7 +172,7 @@ $('#gate-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 async function boot(){
   try{
     const manifest=await (await fetch('../data/stores.json?t='+Date.now())).json();
-    STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
+    STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.filter(m=>!m.hidden).map(m=>m.key));
     const CN_NUM=['一','二','三','四','五','六','七','八','九','十'];
     const cnN=n=>n>=1&&n<=10?CN_NUM[n-1]:String(n);
     const title='酒水比价 · '+cnN(STORE_KEYS.length)+'店';
