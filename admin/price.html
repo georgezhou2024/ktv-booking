@@ -157,7 +157,7 @@ td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0;}
 <script type="module">
 import * as E from './menu-engine.js';
 const $=s=>document.querySelector(s);
-const STORE_KEYS=E.STORE_KEYS;
+let STORE_KEYS=[]; // 来自 data/stores.json，新增门店自动纳入
 let DATA=null, MODEL=null, activeTab='rows', sortKey='diff', sortDir=-1, lastResults=[];
 
 function login(){
@@ -171,12 +171,14 @@ $('#gate-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 
 async function boot(){
   try{
+    const manifest=await (await fetch('../data/stores.json?t='+Date.now())).json();
+    STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
     const stores={};
     await Promise.all(STORE_KEYS.map(async k=>{stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json();}));
     const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
     const storeNames=Object.fromEntries(Object.entries(stores).map(([k,v])=>[k,v.name]));
     const dom={parse:h=>new DOMParser().parseFromString(h,'text/html')};
-    const cells=E.buildCells(stores,dom,shisha);
+    const cells=E.buildCells(stores,dom,shisha,STORE_KEYS);
     const clusters=E.clusterCells(cells);
     const ana=E.analyze(clusters,cells,storeNames);
     const rb=E.buildRows(clusters,STORE_KEYS);
