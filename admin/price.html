@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>酒水比价 · PH GROUP（内部）</title>
+<style>
+:root{--bg:#14110f;--panel:#1c1714;--card:#221c18;--line:#332b25;--gold:#c9a96e;--mut:#8d8175;--txt:#e8ddcc;--green:#2e7d4f;--greenbg:#173a28;--red:#b3242a;--redbg:#3a1719;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:13px;padding-bottom:50px;}
+.wrap{max-width:1280px;margin:0 auto;padding:16px 16px 40px;}
+h1{font-size:19px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;}
+.meta{color:var(--mut);font-size:11.5px;margin-bottom:14px;line-height:1.7;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:9px;margin-bottom:14px;}
+.cardx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px;}
+.cardx .t{font-size:12px;color:var(--gold);margin-bottom:6px;font-weight:600;}
+.cardx table{width:100%;border-collapse:collapse;font-size:11.5px;}
+.cardx td{padding:2px 0;color:var(--mut);}
+.cardx td:last-child{text-align:right;color:var(--txt);font-weight:600;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:14px;}
+.panel h2{font-size:14px;margin-bottom:9px;color:var(--gold);display:flex;align-items:center;gap:8px;}
+.tag{font-size:10.5px;background:var(--card);color:var(--mut);border:1px solid var(--line);border-radius:10px;padding:1px 9px;font-weight:400;}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:11px;}
+.controls input[type=text],.controls input[type=search],.controls select{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;background:#171310;color:var(--txt);outline:none;}
+.controls input{min-width:200px;flex:1;max-width:320px;}
+.controls label{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--mut);cursor:pointer;}
+button{padding:8px 14px;border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:7px;font-size:12.5px;cursor:pointer;}
+button.btn-red{background:var(--red);border-color:var(--red);color:#fff;}
+button.gray{border-color:var(--line);color:var(--mut);}
+#content{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:separate;border-spacing:0 7px;font-size:12.5px;}
+thead th{color:var(--mut);font-weight:500;font-size:11px;padding:0 8px 3px;text-align:center;white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody tr{background:var(--card);}
+td{padding:10px 8px;text-align:center;vertical-align:middle;border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap;}
+td:first-child{text-align:left;border-left:1px solid var(--line);border-radius:10px 0 0 10px;white-space:normal;min-width:150px;max-width:260px;line-height:1.4;}
+td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0;}
+.pcat{font-size:10.5px;color:var(--gold);margin-top:3px;}
+.pen{font-size:10.5px;color:var(--mut);}
+.price-cell{font-weight:700;font-variant-numeric:tabular-nums;border-radius:7px;margin:0 2px;min-width:52px;display:inline-block;padding:5px 5px;}
+.pc-min{background:var(--green);color:#eafff2;}
+.pc-max{background:var(--red);color:#ffe8e8;}
+.pc-eq{color:#d8cdbd;}
+.pc-na{color:#6b6258;font-size:11px;}
+.pc-bundle{display:block;font-size:9.5px;font-weight:400;opacity:.85;margin-top:2px;}
+.diff-cell{font-weight:700;color:#ef9a9d;}
+.diff-zero{color:var(--mut);font-weight:400;}
+.tabs{display:flex;gap:7px;margin-bottom:13px;overflow-x:auto;padding-top:4px;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{flex:none;background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:8px 14px;font-size:12.5px;}
+.tabs button.on{background:var(--gold);color:#17120c;border-color:var(--gold);font-weight:700;}
+.sec{display:none;}.sec.on{display:block;}
+.pendpair{background:#2a2316;border:1px solid rgba(216,168,58,.4);border-radius:9px;padding:9px 11px;margin-bottom:8px;font-size:12px;line-height:1.7;}
+.anom{background:var(--redbg);border:1px solid rgba(179,36,42,.5);border-radius:9px;padding:9px 11px;margin-bottom:8px;font-size:12px;line-height:1.7;}
+.small{font-size:11px;color:var(--mut);line-height:1.8;}
+.uniqstore{font-weight:600;margin:12px 0 5px;color:var(--gold);}
+.empty-tip{color:var(--mut);text-align:center;padding:40px 0;font-size:12.5px;}
+/* 搜索面板 */
+.searchhero{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px;margin-bottom:14px;}
+.searchhero h2{font-size:15px;color:var(--gold);margin-bottom:4px;}
+.searchhero .hint{font-size:11.5px;color:var(--mut);margin-bottom:11px;line-height:1.7;}
+.searchrow{display:flex;gap:8px;}
+.searchrow input{flex:1;padding:12px 14px;border:2px solid var(--red);border-radius:9px;font-size:14px;background:#171310;color:var(--txt);outline:none;}
+.sresult{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:11px;background:var(--card);}
+.sresult h3{font-size:13.5px;margin-bottom:2px;}
+.sresult .scat{font-size:11px;color:var(--mut);margin-bottom:7px;}
+.stable{width:100%;border-collapse:collapse;font-size:12.5px;}
+.stable td{padding:7px 10px;border-bottom:1px dashed var(--line);white-space:normal;text-align:left;border-radius:0;border-left:0;border-right:0;}
+.stable td.sname{width:150px;font-weight:600;}
+.stable td.sprice{width:140px;text-align:right;font-weight:700;}
+.snone{color:var(--mut);}
+.smin{color:#7fc99a;}.shigh{color:#ef9a9d;font-weight:600;}
+.sactions{margin-top:8px;text-align:right;}
+#searchMeta{font-size:11.5px;color:var(--mut);margin:9px 2px 0;}
+.legend{font-size:10.5px;color:var(--mut);margin:0 2px 8px;}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 3px 0 10px;vertical-align:-1px;}
+/* 密码门 */
+#gate{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at 50% 30%,#241d18,#0e0b09);display:flex;align-items:center;justify-content:center;padding:20px;}
+.gate-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px 36px;width:340px;text-align:center;}
+.gate-box h2{color:var(--gold);letter-spacing:3px;font-size:19px;margin-bottom:6px;}
+.gate-box p{color:var(--mut);font-size:12px;margin-bottom:18px;}
+#gate-pwd{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#171310;color:var(--txt);font-size:15px;letter-spacing:3px;margin-bottom:12px;outline:none;}
+#gate-btn{width:100%;padding:11px;background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;font-weight:700;border:0;border-radius:8px;letter-spacing:4px;font-size:15px;}
+#gate-err{color:#ef9a9d;font-size:11.5px;height:16px;margin-top:9px;}
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.topbar h1{flex:1;}
+@media(max-width:640px){
+  .wrap{padding:12px 10px 40px;}
+  thead th:first-child,tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:2px 0 6px rgba(0,0,0,.4);}
+  thead th:first-child{z-index:3;background:#1c1714;}
+  td:first-child{min-width:128px;max-width:160px;}
+  .price-cell{min-width:44px;font-size:11.5px;padding:5px 2px;}
+  table{width:auto;min-width:100%;}
+}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-box">
+    <h2>酒水比价 · 四店</h2>
+    <p>PH GROUP 内部资料 · 请勿外传</p>
+    <input id="gate-pwd" type="password" placeholder="管理密码" autocomplete="off" maxlength="20">
+    <button id="gate-btn">进 入</button>
+    <div id="gate-err"></div>
+  </div>
+</div>
+<div class="wrap" id="app" style="display:none">
+  <div class="topbar">
+    <h1>酒水比价 · 四店</h1>
+    <button class="gray" id="btn-reload">刷新数据</button>
+    <button class="btn-red" id="btn-export">导出 Excel</button>
+  </div>
+  <div class="meta" id="meta"></div>
+  <div class="cards" id="cards"></div>
+
+  <div class="searchhero">
+    <h2>同款比价搜索</h2>
+    <div class="hint">输入中文或英文酒名，如「麦卡伦12年双桶」「Macallan Double Cask 12」；列出各门店价格、缺品门店与高出最低价金额，可一键复制。</div>
+    <div class="searchrow">
+      <input type="search" id="search" placeholder="输入酒名（中/英文），如：麦卡伦盈钻 Macallan Litha">
+      <button id="btn-search">搜 索</button>
+      <button class="gray" id="btn-copyall" style="display:none">复制全部</button>
+    </div>
+    <div id="searchMeta"></div>
+    <div id="searchBox"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="sec on" id="sec-rows">
+    <div class="panel">
+      <div class="controls">
+        <input type="search" id="q" placeholder="搜索酒水名称（中/英文）">
+        <select id="catSel"><option value="">全部品类</option></select>
+        <label><input type="checkbox" id="onlyDiff"> 只看有差价</label>
+        <label><input type="checkbox" id="onlyBig"> 只看价差&gt;10%</label>
+      </div>
+      <div class="legend"><i style="background:var(--green)"></i>最低价<i style="background:var(--red)"></i>最高价（按价差从大到小排序，套餐价显示在单价下方）</div>
+      <div id="content"><table id="cmpTable"></table></div>
+    </div>
+  </div>
+  <div class="sec" id="sec-uniques"><div class="panel"><h2>独有单品 <span class="tag">仅一家门店售卖</span></h2><div id="uniqueBox"></div></div></div>
+  <div class="sec" id="sec-pending"><div class="panel"><h2>待人工确认 <span class="tag">名称高度相似，系统未自动配对</span></h2><div id="pendingBox"></div></div></div>
+  <div class="sec" id="sec-mismatch"><div class="panel"><h2>名称不符预警 <span class="tag">同款判定中文优先、英文其次</span></h2><div id="mismatchBox"></div></div></div>
+  <div class="sec" id="sec-anomaly"><div class="panel"><h2>异常预警 <span class="tag">重复录入 / 缺价 / 品类不一致</span></h2><div id="anomalyBox"></div></div></div>
+  <div class="sec" id="sec-detail">
+    <div class="panel">
+      <div class="controls">
+        <input type="search" id="q2" placeholder="搜索全部单品">
+        <select id="storeSel"><option value="">全部门店</option></select>
+      </div>
+      <div id="content2"><table id="detailTable"></table></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as E from './menu-engine.js';
+const $=s=>document.querySelector(s);
+const STORE_KEYS=E.STORE_KEYS;
+let DATA=null, MODEL=null, activeTab='rows', sortKey='diff', sortDir=-1, lastResults=[];
+
+function login(){
+  if($('#gate-pwd').value.trim()==='ph666'){
+    sessionStorage.setItem('ph_price_auth','1');
+    $('#gate').style.display='none'; $('#app').style.display='block'; boot();
+  } else $('#gate-err').textContent='密码错误';
+}
+$('#gate-btn').onclick=login;
+$('#gate-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+async function boot(){
+  try{
+    const stores={};
+    await Promise.all(STORE_KEYS.map(async k=>{stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json();}));
+    const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
+    const storeNames=Object.fromEntries(Object.entries(stores).map(([k,v])=>[k,v.name]));
+    const dom={parse:h=>new DOMParser().parseFromString(h,'text/html')};
+    const cells=E.buildCells(stores,dom,shisha);
+    const clusters=E.clusterCells(cells);
+    const ana=E.analyze(clusters,cells,storeNames);
+    const rb=E.buildRows(clusters,STORE_KEYS);
+    DATA={stores,shisha,storeNames}; MODEL={cells,clusters,ana,rows:rb.rows,uniqueRows:rb.uniqueRows};
+    $('#meta').textContent='数据随菜单推送自动更新 · '+new Date().toLocaleString('zh-CN');
+    buildAll();
+  }catch(err){
+    $('#app').innerHTML='<div class="empty-tip">数据加载失败：'+err.message+'</div>';
+  }
+}
+function buildAll(){
+  renderCards(); fillSelects(); buildTabs(); renderRows(); renderUniques(); renderPending(); renderMismatch(); renderAnomaly(); renderDetail();
+}
+function renderCards(){
+  const {cells,rows}=MODEL;
+  let html='';
+  STORE_KEYS.forEach(sk=>{
+    const mine=cells.filter(c=>c.store===sk);
+    let cheap=0,exp=0,matched=0;
+    rows.forEach(r=>{const c=r.prices[STORE_KEYS.indexOf(sk)];if(!c)return;matched++;if(r.diff>0){if(c.price===r.min)cheap++;if(c.price===r.max)exp++;}});
+    html+=`<div class="cardx"><div class="t">${DATA.storeNames[sk]}</div><table>
+      <tr><td>在售单元</td><td>${mine.length}</td></tr>
+      <tr><td>同款匹配</td><td>${matched}</td></tr>
+      <tr><td>独有</td><td>${mine.length-matched}</td></tr>
+      <tr><td style="color:#7fc99a">最低价次数</td><td style="color:#7fc99a">${cheap}</td></tr>
+      <tr><td style="color:#ef9a9d">最高价次数</td><td style="color:#ef9a9d">${exp}</td></tr></table></div>`;
+  });
+  const {ana}=MODEL;
+  html+=`<div class="cardx"><div class="t">全盘总览</div><table>
+    <tr><td>同款组</td><td>${rows.length}</td></tr>
+    <tr><td>有差价</td><td style="color:#ef9a9d">${rows.filter(r=>r.diff>0).length}</td></tr>
+    <tr><td>待确认</td><td>${ana.pendPairs.length}</td></tr>
+    <tr><td>名称不符</td><td style="color:#e0bd7a">${ana.nameMismatches.length}</td></tr>
+    <tr><td>异常</td><td>${ana.anomalies.length}</td></tr></table></div>`;
+  $('#cards').innerHTML=html;
+}
+function fillSelects(){
+  const cm={};
+  STORE_KEYS.forEach(sk=>DATA.stores[sk].categories.forEach(c=>{cm[c.id]=c.name;}));
+  $('#catSel').innerHTML='<option value="">全部品类</option>'+Object.entries(cm).filter(([id])=>!['rooms','notice','member'].includes(id)).map(([id,n])=>`<option value="${id}">${n}</option>`).join('');
+  $('#storeSel').innerHTML='<option value="">全部门店</option>'+STORE_KEYS.map(k=>`<option value="${k}">${DATA.storeNames[k]}</option>`).join('');
+}
+const TAB_DEFS=[['rows','同款比价'],['uniques','独有单品'],['pending','待人工确认'],['mismatch','名称不符'],['anomaly','异常预警'],['detail','全量明细']];
+function buildTabs(){
+  $('#tabs').innerHTML=TAB_DEFS.map(([id,n],i)=>`<button data-tab="${id}" class="${i===0?'on':''}">${n}</button>`).join('');
+  $$('#tabs button').forEach(b=>b.onclick=()=>{
+    $$('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    $$('.sec').forEach(s=>s.classList.remove('on'));$('#sec-'+b.dataset.tab).classList.add('on');
+  });
+}
+const $$=s=>[...document.querySelectorAll(s)];
+function cellHtml(c,isMin,isMax){
+  if(!c) return '<td><span class="price-cell pc-na">—</span></td>';
+  const cls=isMin?'pc-min':isMax?'pc-max':'pc-eq';
+  const b=c.bundle.length?`<span class="pc-bundle">${c.bundle.map(x=>x.qty+'瓶 ¥'+x.price).join('　')}</span>`:'';
+  return `<td><span class="price-cell ${cls}">¥${c.price}</span>${b}</td>`;
+}
+function filteredRows(){
+  const q=$('#q').value.trim().toUpperCase(), cat=$('#catSel').value;
+  const od=$('#onlyDiff').checked, ob=$('#onlyBig').checked;
+  let list=MODEL.rows.filter(r=>{
+    if(cat&&r.catId!==cat)return false;
+    if(od&&r.diff===0)return false;
+    if(ob&&r.pct<=10)return false;
+    if(q){const hay=r.display.toUpperCase()+' '+r.cl.cells.map(c=>(c.name+' '+c.en).toUpperCase()).join(' ');if(!hay.includes(q))return false;}
+    return true;
+  });
+  const cmp={diff:(a,b)=>a.diff-b.diff,pct:(a,b)=>a.pct-b.pct,name:(a,b)=>a.display.localeCompare(b.display,'zh'),cat:(a,b)=>a.catName.localeCompare(b.catName,'zh')};
+  STORE_KEYS.forEach((sk,i)=>cmp['s'+i]=(a,b)=>(a.prices[i]?.price??1e12)-(b.prices[i]?.price??1e12));
+  list.sort((a,b)=>((cmp[sortKey]||(()=>0))(a,b))*sortDir);
+  return list;
+}
+function renderRows(){
+  let h='<thead><tr><th data-k="name">品名</th><th data-k="cat">品类</th>';
+  STORE_KEYS.forEach((sk,i)=>h+=`<th data-k="s${i}">${DATA.storeNames[sk]}</th>`);
+  h+='<th data-k="diff">价差</th><th data-k="pct">价差%</th><th>规格</th></tr></thead><tbody>';
+  filteredRows().forEach(r=>{
+    h+=`<tr><td>${esc(r.display)}<div class="pcat">${r.catName}</div></td><td class="pen">${r.catName}</td>`;
+    STORE_KEYS.forEach((sk,i)=>h+=cellHtml(r.prices[i],r.diff>0&&r.prices[i]&&r.prices[i].price===r.min,r.diff>0&&r.prices[i]&&r.prices[i].price===r.max));
+    h+=`<td class="${r.diff?'diff-cell':'diff-zero'}">${r.diff?'¥'+Math.round(r.diff):'—'}</td>`;
+    h+=`<td class="${r.pct>10?'diff-cell':'diff-zero'}">${r.diff?r.pct.toFixed(1)+'%':'—'}</td><td class="pen">${r.spec}</td></tr>`;
+  });
+  $('#cmpTable').innerHTML=h+'</tbody>';
+  $$('#cmpTable th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==='name'||k==='cat')?1:-1;}renderRows();});
+}
+function renderUniques(){
+  let html='';
+  STORE_KEYS.forEach(sk=>{
+    const mine=MODEL.uniqueRows.filter(cl=>cl.cells[0].store===sk);
+    if(!mine.length)return;
+    mine.sort((a,b)=>a.cells[0].catName.localeCompare(b.cells[0].catName,'zh')||b.cells[0].price-a.cells[0].price);
+    html+=`<div class="uniqstore">${DATA.storeNames[sk]}（${mine.length}）</div><table><thead><tr><th style="text-align:left">品名</th><th>品类</th><th>规格</th><th>价格</th></tr></thead><tbody>`;
+    mine.forEach(cl=>{const c=cl.cells[0];html+=`<tr><td>${esc(c.name)}</td><td class="pen">${c.catName}</td><td>${c.spec}</td><td>¥${c.price}${c.bundle.length?'<span class="pc-bundle">'+c.bundle.map(b=>b.qty+'瓶¥'+b.price).join(' ')+'</span>':''}</td></tr>`;});
+    html+='</tbody></table>';
+  });
+  $('#uniqueBox').innerHTML=html||'<div class="empty-tip">无</div>';
+}
+function pairHtml(p){
+  const side=cl=>cl.cells.map(c=>`${DATA.storeNames[c.store]}：${esc(c.name)} ¥${c.price}`).join('<br>');
+  return `<div class="pendpair">${p.type?`<b style="color:#e0bd7a">${p.type}</b><br>`:`<b>相似度 ${p.score}%</b><br>`}${side(p.a)}<br>${side(p.b)}</div>`;
+}
+function renderPending(){ const a=MODEL.ana.pendPairs; $('#pendingBox').innerHTML=a.length?a.slice(0,200).map(pairHtml).join(''):'<div class="small">无</div>'; }
+function renderMismatch(){ const a=MODEL.ana.nameMismatches; $('#mismatchBox').innerHTML=a.length?'<div class="small" style="margin-bottom:8px">系统以<b>中文名</b>为首要同款依据，下列条目未参与比价，请核对菜单是否录错。</div>'+a.slice(0,200).map(pairHtml).join(''):'<div class="small">无</div>'; }
+function renderAnomaly(){ const a=MODEL.ana.anomalies; $('#anomalyBox').innerHTML=a.length?a.map(x=>`<div class="anom"><b>[${x.type}]</b> ${esc(x.text)}</div>`).join(''):'<div class="empty-tip">未发现异常</div>'; }
+function renderDetail(){
+  const q=$('#q2').value.trim().toUpperCase(), sk=$('#storeSel').value;
+  let list=MODEL.cells.filter(c=>{if(sk&&c.store!==sk)return false;if(q&&!(c.name.toUpperCase().includes(q)||c.catName.toUpperCase().includes(q)))return false;return true;});
+  list.sort((a,b)=>STORE_KEYS.indexOf(a.store)-STORE_KEYS.indexOf(b.store)||a.catId.localeCompare(b.catId)||b.price-a.price);
+  let h='<thead><tr><th>门店</th><th style="text-align:left">品名</th><th>品类</th><th>规格</th><th>单价</th><th>套餐价</th></tr></thead><tbody>';
+  list.forEach(c=>{h+=`<tr><td>${DATA.storeNames[c.store]}</td><td style="text-align:left;white-space:normal">${esc(c.name)}</td><td class="pen">${c.catName}</td><td>${c.spec}</td><td>¥${c.price}</td><td class="pen">${c.bundle.map(b=>b.qty+'瓶¥'+b.price).join('　')||'—'}</td></tr>`;});
+  $('#detailTable').innerHTML=h+'</tbody>';
+}
+// ---------- 搜索 ----------
+function clusterDisplay(cl){const cnt={};cl.cells.forEach(c=>cnt[c.name]=(cnt[c.name]||0)+1);return Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];}
+function priceText(c){return '¥'+c.price+(c.bundle&&c.bundle.length?'（'+c.bundle.map(b=>b.qty+'瓶¥'+b.price).join('，')+'）':'');}
+function matchScore(cl,qRaw){
+  const q=qRaw.normalize('NFKD').toUpperCase().trim(); if(!q)return 0;
+  if(/^\d+$/.test(q)){const pr=parseInt(q,10);return cl.cells.some(c=>c.price===pr)?50:0;}
+  const qzh=E.zhCore(q); const cjk=qzh.match(/[一-鿿]/g)||[];
+  const zhToks=qzh.match(/[A-Z0-9.]+/g)||[];
+  const enToks=(q.match(/[A-Z0-9.&'\-]+/g)||[]).map(E.normEn).filter(t=>t.replace(/[^A-Z0-9]/g,'').length>=2);
+  const zhHay=cl.cells.map(c=>c.zh).join(' '), enHay=cl.cells.map(c=>c.en).join(' '), rawHay=E.normEn(cl.cells.map(c=>c.name).join(' '));
+  let score=0;
+  if(cjk.length){for(const ch of cjk) if(zhHay.indexOf(ch)<0)return 0; score+=40+cjk.length*2;}
+  for(const t of zhToks){if(/^\d+Y?$/.test(t)){if(zhHay.indexOf(t)<0&&enHay.indexOf(t)<0)return 0;score+=15;}}
+  for(const t of enToks){const tt=t.replace(/[^A-Z0-9]/g,'');if(tt.length<2)continue;if(enHay.indexOf(tt)>=0||rawHay.indexOf(tt)>=0)score+=18;else return 0;}
+  if(!cjk.length&&enToks.length===0)return 0;
+  const disp=E.normEn(clusterDisplay(cl)), qc=E.normEn(q).replace(/[^A-Z0-9一-鿿]/g,'');
+  if(qc&&disp.indexOf(qc)>=0)score+=30;
+  return score;
+}
+function resultText(cl){
+  const vals=cl.cells.map(c=>c.price),min=Math.min(...vals),storeCount=new Set(cl.cells.map(c=>c.store)).size;
+  let t='【'+clusterDisplay(cl)+'】（'+cl.cells[0].catName+' / '+cl.spec+'）\n';
+  STORE_KEYS.forEach(sk=>{
+    const cs=cl.cells.filter(c=>c.store===sk);const c=cs[0];
+    t+=DATA.storeNames[sk]+'：';
+    if(!c)t+='此门店没有此产品\n';
+    else if(c.price===min)t+=priceText(c)+(storeCount===1?'（仅该店有售）':'（最低价）')+'\n';
+    else{const d=c.price-min;pct=min?(d/min*100).toFixed(1):'0';t+=priceText(c)+'（高出¥'+d+'，+'+pct+'%）\n';}
+  });
+  return t;
+}
+var pct;
+function renderResult(cl){
+  const vals=cl.cells.map(c=>c.price),min=Math.min(...vals),storeCount=new Set(cl.cells.map(c=>c.store)).size;
+  let rows='';
+  STORE_KEYS.forEach(sk=>{
+    const cs=cl.cells.filter(c=>c.store===sk);const c=cs[0];
+    if(!c)rows+=`<tr><td class="sname">${DATA.storeNames[sk]}</td><td class="sprice snone" colspan="2">此门店没有此产品</td></tr>`;
+    else{let tag=c.price===min?(storeCount===1?'<span class="smin">仅该店有售</span>':'<span class="smin">最低价 ✓</span>'):(()=>{const d=c.price-min,p=min?(d/min*100).toFixed(1):'0';return '<span class="shigh">高出 ¥'+d+'（+'+p+'%）</span>';})();
+      rows+=`<tr><td class="sname">${DATA.storeNames[sk]}</td><td class="sprice">${priceText(c)}</td><td>${tag}</td></tr>`;}
+  });
+  const div=document.createElement('div');div.className='sresult';
+  div.innerHTML=`<h3>${esc(clusterDisplay(cl))}</h3><div class="scat">${cl.cells[0].catName} ｜ 规格：${cl.spec}</div><table class="stable">${rows}</table><div class="sactions"><button type="button">复制此结果</button></div>`;
+  div.querySelector('button').onclick=()=>copyText(resultText(cl));
+  return div;
+}
+function runSearch(){
+  const q=$('#search').value.trim();const box=$('#searchBox'),meta=$('#searchMeta');
+  box.innerHTML='';lastResults=[];$('#btn-copyall').style.display='none';
+  if(!q){meta.textContent='';return;}
+  const hits=MODEL.clusters.map(cl=>({cl,s:matchScore(cl,q)})).filter(h=>h.s>0).sort((a,b)=>b.s-a.s).slice(0,24);
+  if(!hits.length){meta.textContent='没有找到「'+q+'」，可只输关键词如「麦卡伦 12」。';return;}
+  meta.textContent='找到 '+hits.length+' 个相关单品（按相关度排序）';
+  hits.forEach(h=>box.appendChild(renderResult(h.cl)));
+  lastResults=hits.map(h=>resultText(h.cl));$('#btn-copyall').style.display='';
+}
+$('#btn-search').onclick=runSearch;
+$('#search').addEventListener('keydown',e=>{if(e.key==='Enter')runSearch();});
+$('#btn-copyall').onclick=()=>{if(lastResults.length)copyText(lastResults.join('\n'));};
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('已复制，可直接粘贴'),()=>fallback(t));
+  else fallback(t);
+}
+function fallback(t){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败，请手动选择');}ta.remove();}
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;left:50%;bottom:50px;transform:translateX(-50%);background:#000d;color:#fff;padding:9px 20px;border-radius:8px;z-index:999;font-size:13px';document.body.appendChild(t);setTimeout(()=>t.remove(),1600);}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// 导出当前比价表为 .xls
+$('#btn-export').onclick=()=>{
+  let h='<tr><td colspan="'+(STORE_KEYS.length+5)+'">PH GROUP 酒水同款比价表　'+new Date().toLocaleString('zh-CN')+'</td></tr>';
+  h+='<tr><th>品名</th><th>品类</th>'+STORE_KEYS.map(k=>'<th>'+DATA.storeNames[k]+'</th>').join('')+'<th>价差</th><th>价差%</th><th>规格</th></tr>';
+  filteredRows().forEach(r=>{
+    h+='<tr><td>'+r.display+'</td><td>'+r.catName+'</td>';
+    STORE_KEYS.forEach((sk,i)=>{const c=r.prices[i];let st='';if(r.diff>0&&c){if(c.price===r.min)st='background:#c6efce;color:#006100';else if(c.price===r.max)st='background:#ffc7ce;color:#9c0006';}h+=c?'<td style="'+st+'">¥'+c.price+(c.bundle.length?' ('+c.bundle.map(b=>b.qty+'瓶¥'+b.price).join(',')+')':'')+'</td>':'<td>此门店没有此产品</td>';});
+    h+='<td>'+(r.diff?'¥'+r.diff:'—')+'</td><td>'+(r.diff?r.pct.toFixed(1)+'%':'—')+'</td><td>'+r.spec+'</td></tr>';
+  });
+  const html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>'+h+'</table></body></html>';
+  const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PH四店酒水比价_'+new Date().toISOString().slice(0,10)+'.xls';a.click();
+};
+$('#btn-reload').onclick=()=>location.reload();
+$('#q').oninput=renderRows;$('#catSel').onchange=renderRows;$('#onlyDiff').onchange=renderRows;$('#onlyBig').onchange=renderRows;
+$('#q2').oninput=renderDetail;$('#storeSel').onchange=renderDetail;
+if(sessionStorage.getItem('ph_price_auth')==='1'){$('#gate').style.display='none';$('#app').style.display='block';boot();}
+</script>
+</body>
+</html>
