@@ -98,7 +98,7 @@ td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0;}
 <body>
 <div id="gate">
   <div class="gate-box">
-    <h2>酒水比价 · 四店</h2>
+    <h2 class="js-count-title">酒水比价 · 四店</h2>
     <p>PH GROUP 内部资料 · 请勿外传</p>
     <input id="gate-pwd" type="password" placeholder="管理密码" autocomplete="off" maxlength="20">
     <button id="gate-btn">进 入</button>
@@ -107,7 +107,7 @@ td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0;}
 </div>
 <div class="wrap" id="app" style="display:none">
   <div class="topbar">
-    <h1>酒水比价 · 四店</h1>
+    <h1 class="js-count-title">酒水比价 · 四店</h1>
     <button class="gray" id="btn-reload">刷新数据</button>
     <button class="btn-red" id="btn-export">导出 Excel</button>
   </div>
@@ -173,6 +173,12 @@ async function boot(){
   try{
     const manifest=await (await fetch('../data/stores.json?t='+Date.now())).json();
     STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
+    const CN_NUM=['一','二','三','四','五','六','七','八','九','十'];
+    const cnN=n=>n>=1&&n<=10?CN_NUM[n-1]:String(n);
+    const title='酒水比价 · '+cnN(STORE_KEYS.length)+'店';
+    document.querySelectorAll('.js-count-title').forEach(el=>el.textContent=title);
+    document.title=title+' · PH GROUP（内部）';
+    window.__cnN=cnN;
     const stores={};
     await Promise.all(STORE_KEYS.map(async k=>{stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json();}));
     const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
@@ -368,7 +374,7 @@ $('#btn-export').onclick=()=>{
   });
   const html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>'+h+'</table></body></html>';
   const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PH四店酒水比价_'+new Date().toISOString().slice(0,10)+'.xls';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PH'+(window.__cnN?window.__cnN(STORE_KEYS.length):STORE_KEYS.length)+'店酒水比价_'+new Date().toISOString().slice(0,10)+'.xls';a.click();
 };
 $('#btn-reload').onclick=()=>location.reload();
 $('#q').oninput=renderRows;$('#catSel').onchange=renderRows;$('#onlyDiff').onchange=renderRows;$('#onlyBig').onchange=renderRows;
