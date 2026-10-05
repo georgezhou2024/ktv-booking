@@ -416,24 +416,7 @@
 <!-- ========== 门店选择页面 ========== -->
 <div id="store-select-page" class="store-select-container">
     <h1 class="store-select-title">请选择门店</h1>
-    <div class="store-select-buttons">
-        <button class="store-btn" onclick="enterStore('acme')">
-            ACME
-            <p>Meet me at Acme</p>
-        </button>
-        <button class="store-btn" onclick="enterStore('phroom')">
-            PH ROOM
-            <p>PH ROOM</p>
-        </button>
-        <button class="store-btn" onclick="enterStore('eros')">
-            EROS LIVE SHOW
-            <p>Fall in Love. Fall into Play.</p>
-        </button>
-        <button class="store-btn" onclick="enterStore('sensory')">
-            SENSORY GARDEN
-            <p>森三里</p>
-        </button>
-    </div>
+    <div class="store-select-buttons" id="store-buttons"></div>
     <div style="margin-top:30px;">
         <button class="store-btn" style="padding:16px 36px;font-size:15px;min-width:auto;background:linear-gradient(140deg,#333,#111);border-color:#666;" onclick="showAbout()">
             PHGROUP 品牌介绍
@@ -506,14 +489,16 @@
 <script>
 // ========== 门店酒水单数据 ==========
 let STORE_DATA = {};
+let STORE_LIST = []; // 门店清单（data/stores.json，由 /admin 后台维护，新增门店自动出现）
 // ========== 菜单数据加载（data/*.json，由 /admin 管理后台维护，时间戳防缓存） ==========
-const DATA_FILES = { acme:'data/acme.json', phroom:'data/phroom.json', eros:'data/eros.json', sensory:'data/sensory.json' };
 const DATA_READY = (async function(){
   try{
-    await Promise.all(Object.keys(DATA_FILES).map(async function(k){
-      STORE_DATA[k] = await (await fetch(DATA_FILES[k] + '?t=' + Date.now())).json();
+    STORE_LIST = await (await fetch('data/stores.json?t=' + Date.now())).json();
+    await Promise.all(STORE_LIST.map(async function(m){
+      STORE_DATA[m.key] = await (await fetch('data/' + m.key + '.json?t=' + Date.now())).json();
     }));
     SHISHA_CONTENT = await (await fetch('data/shisha.json?t=' + Date.now())).json();
+    renderStoreButtons();
     window.__dataReady = true;
     var bm = document.getElementById('boot-mask'); if(bm) bm.remove();
   }catch(e){
@@ -522,6 +507,13 @@ const DATA_READY = (async function(){
     console.error('菜单数据加载失败', e);
   }
 })();
+
+// 根据门店清单动态渲染门店按钮
+function renderStoreButtons(){
+    document.getElementById('store-buttons').innerHTML = STORE_LIST.map(function(m){
+        return '<button class="store-btn" onclick="enterStore(\'' + m.key + '\')">' + m.name + '<p>' + (m.sub || '') + '</p></button>';
+    }).join('');
+}
 
 
 // ========== 页面切换逻辑 ==========
