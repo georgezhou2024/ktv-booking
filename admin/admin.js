@@ -873,6 +873,7 @@ async function pushAll(){
       const body=b64Unicode(content);
       await ghApi(`contents/${path}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,content:body,sha,branch:cfg.branch})});
     }
+    if(files.some(p=>p.startsWith('data/'))) await bumpVersionFile(message+' · 版本号');
     stages=[]; refreshAll();
     toast('推送成功，等待 Pages 部署（约1分钟）',3000);
     pollActions();
@@ -881,6 +882,14 @@ async function pushAll(){
   }finally{ btn.textContent='一 键 推 送'; btn.disabled=stages.length===0||!cfg.pat; }
 }
 function b64Unicode(str){ return btoa(unescape(encodeURIComponent(str))); }
+// 更新 data/version.txt：菜单页/比价页据此让数据文件走强缓存，版本一变才重新拉取
+async function bumpVersionFile(message){
+  const v=String(Date.now());
+  let sha=null;
+  try{ const ex=await ghApi(`contents/data/version.txt?ref=${cfg.branch}`); sha=ex.sha; }catch(e){ /* 首次无此文件 */ }
+  await ghApi('contents/data/version.txt',{method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:message||'bump menu data version',content:btoa(v),sha,branch:cfg.branch})});
+}
 async function pollActions(){
   for(let i=0;i<6;i++){
     await new Promise(r=>setTimeout(r,15000));
@@ -932,6 +941,8 @@ async function deploySystem(){
         body:JSON.stringify({message,content:b64Unicode(content),sha,branch:cfg.branch})});
       log.textContent='已上传 '+path;
     }
+    log.textContent='全部上传完成，正在更新数据版本号…';
+    await bumpVersionFile(message+' · 版本号');
     log.textContent='全部上传完成，等待 Pages 部署（约1分钟）…';
     toast('程序文件推送成功',3000);
     pollActions();
