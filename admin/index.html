@@ -119,6 +119,17 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
   .toolbar select{flex:1;}
   .gate-box{padding:24px 20px;}
 }
+.cardx2{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+.grid-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;}
+.grid-form .fld{margin:0;}
+.store-row{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+.store-row .sr-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.store-row .sr-name{font-size:16px;font-weight:700;color:var(--gold);}
+.store-row .sr-meta{font-size:12px;color:var(--mut);margin-top:2px;}
+.cat-chip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:2px 10px;margin:4px 6px 0 0;font-size:12px;}
+.sr-addcat{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.sr-addcat input{flex:1;min-width:160px;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:7px 10px;font-size:13px;}
+@media(max-width:640px){ .grid-form{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -143,7 +154,7 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
 <!-- 顶栏 -->
 <div id="topbar" style="display:none">
   <div class="tt">菜单管理后台</div>
-  <div id="conn"><span class="dot"></span><span id="conn-txt">连接中…</span></div>
+  <div id="conn"><span class="dot"></span><span id="conn-txt">连接中…</span><button id="btn-pat-set" style="margin-left:8px;font-size:11px;padding:2px 10px;background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:6px;cursor:pointer">令牌设置</button></div>
   <button id="btn-logout">退出</button>
 </div>
 
@@ -151,6 +162,7 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
 <nav id="nav" style="display:none">
   <button data-panel="edit" class="on">搜索改价</button>
   <button data-panel="pdf">PDF 对账</button>
+  <button data-panel="stores">门店管理</button>
   <button data-panel="stage">待发布<span class="badge" id="stage-badge" style="display:none">0</span></button>
   <button data-panel="history">历史回滚</button>
   <button data-panel="about">比价页说明</button>
@@ -177,7 +189,7 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
     <div id="pdf-drop">
       <div class="big">点击选择 / 拖拽 PDF 到这里</div>
       <div>自动识别品名与价格，按分组价继承规则补全无价行</div>
-      <div class="pdf-hint">识别结果逐条确认后才会进入暂存，不会自动改单。<br>扫描件/图片 PDF 会自动 OCR（中英文，首次加载稍慢）。</div>
+      <div class="pdf-hint">识别结果逐条确认后才会进入暂存，不会自动改单。<br>扫描件/拍照/图片自动 OCR（中英文，深色底自动反色，首次加载稍慢）；艺术字/花纹底页面识别率有限，请逐条核对，识别不清的用「粘贴菜单文字」。</div>
       <input type="file" id="pdf-file" accept="application/pdf,image/*" style="display:none">
     </div>
     <details class="paste"><summary>没有 PDF？直接粘贴菜单文字 / 微信识别文字（点此展开）</summary>
@@ -185,6 +197,22 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
       <div style="text-align:right;margin-top:8px"><button class="btn primary" id="btn-pdf-text">开始识别</button></div>
     </details>
     <div id="pdf-result"></div>
+  </section>
+
+  <!-- 门店管理 -->
+  <section class="panel" id="panel-stores">
+    <div class="pdf-hint">新增门店会自动出现在线上菜单首页和比价页（推送后生效）。新门店先建分类，再去「PDF 对账」或「搜索改价」录入单品。</div>
+    <div id="store-list"></div>
+    <div class="cardx2" style="margin-top:18px">
+      <h3 style="color:var(--gold);margin:0 0 10px">添加新门店</h3>
+      <div class="grid-form">
+        <div class="fld"><label>门店键（英文小写/数字，唯一，如 club5，保存后不可改）</label><input id="ns-key" placeholder="club5" autocomplete="off"></div>
+        <div class="fld"><label>显示名称（菜单按钮大字，如 CLUB 5）</label><input id="ns-name" placeholder="CLUB 5" autocomplete="off"></div>
+        <div class="fld"><label>副标题（按钮小字，可留空）</label><input id="ns-sub" placeholder="Meet me at Club 5" autocomplete="off"></div>
+        <div class="fld"><label>第一个分类名称（可留空，稍后添加）</label><input id="ns-cat" placeholder="威士忌" autocomplete="off"></div>
+      </div>
+      <div style="text-align:right;margin-top:10px"><button class="btn primary" id="btn-ns-add">创建门店并加入待发布</button></div>
+    </div>
   </section>
 
   <!-- 待发布 -->
@@ -227,6 +255,19 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
   <button id="btn-push" disabled>一 键 推 送</button>
 </div>
 <div id="toast"></div>
+
+<!-- 令牌补填弹窗 -->
+<div id="pat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="width:100%;max-width:460px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px">
+    <h3 style="color:var(--gold);margin:0 0 12px">填写 / 更新 GitHub 令牌</h3>
+    <p class="pdf-hint" style="margin-top:0">Fine-grained 令牌（仅 ktv-booking、Contents 读写）。只读查看可以不填；推送必须填写。令牌只保存在本机浏览器。</p>
+    <div class="fld"><label>令牌（github_pat_…）</label><input id="pm-pat" type="password" placeholder="github_pat_..." autocomplete="off" style="letter-spacing:1px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+      <button class="btn" id="pm-cancel">取消</button>
+      <button class="btn primary" id="pm-save">保存</button>
+    </div>
+  </div>
+</div>
 
 <script type="module" src="admin.js"></script>
 </body>
