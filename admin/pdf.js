@@ -18,7 +18,20 @@ export function linesFromText(text){
 }
 
 const PRICE_RE = /(?:¥|RMB)?\s*([\d,]{2,6})\s*(?:\/\s*(\d+)?\s*(瓶|杯|壶|套|份|位|盒|支|罐|听|扎))?/g;
-const ZH_CAT_LINE = /^(?:白葡萄酒|红葡萄酒|葡萄酒|威士忌|香槟|白兰地|干邑|龙舌兰|朗姆酒|朗姆|金酒|伏特加|利口酒|力娇酒|清酒|烧酎|啤酒|鸡尾酒|水烟|软饮|软饮果汁|果汁|咖啡|茶|小食|小吃|果盘|雪茄|香烟|会员充值|充值|须知|包厢|房间)$/;
+// 菜单里常见的分类标题（整单识别时按这些行分节）
+const CAT_NAMES=['白葡萄酒','红葡萄酒','红酒','桃红葡萄酒','桃红','起泡酒','葡萄酒','威士忌','威士忌杯卖','杯卖酒','杯卖','香槟','白兰地','干邑','烈酒','洋酒','白酒','黄酒','日本酒','龙舌兰','朗姆酒','朗姆','金酒','琴酒','伏特加','利口酒','力娇酒','开胃酒','清酒','日本清酒','烧酒','烧酎','梅酒','果酒','啤酒','鸡尾酒','经典鸡尾酒','特调鸡尾酒','特调','水烟','水烟特调','软饮','软饮果汁','果汁','咖啡','茶','矿泉水','小食','小吃','果盘','雪茄','香烟','套餐','会员充值','充值','须知','包厢','房间','其他'];
+const CAT_SET=new Set(CAT_NAMES);
+// 系统/非卖品分类：整单识别时跳过，不入菜单（会员充值不许改）
+const SYSTEM_CAT_NAMES=new Set(['会员充值','充值','须知','包厢','房间']);
+function normCatLine(s){
+  return (s||'').replace(/\s+/g,'').replace(/（[^）]*）|\([^)]*\)/g,'').replace(/共\s*\d+\s*款/g,'').replace(/[类区板块]$/,'');
+}
+function isCatLine(e,line){
+  const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
+  if(!zhChars) return false;
+  if(/\d/.test(line)) return false;
+  return CAT_SET.has(normCatLine(e.zh));
+}
 
 function parseEntryLine(line){
   const pairs=[]; let m; PRICE_RE.lastIndex=0;
@@ -26,6 +39,14 @@ function parseEntryLine(line){
   while((m=PRICE_RE.exec(line))){
     const price=parseFloat(m[1].replace(/,/g,''));
     if(isNaN(price)||price<10||price>999999) continue;
+    const hasMark=/¥|RMB/.test(m[0]);
+    const hasUnit=!!m[3];
+    const after=line.slice(m.index+m[0].length).trimStart();
+    if(after[0]==='年') continue; // 年份（12年/15年）不是价格
+    // 无 ¥/单位 的裸数字：≥100 才算价；两位数仅当整行就是这个数（独占一行的杯卖价）
+    if(!hasMark&&!hasUnit){
+      if(price<100 && line.replace(/[\s¥RMB]/g,'')!==m[1]) continue;
+    }
     const qty=m[2]?parseInt(m[2],10):1;
     const spec=m[3]||'瓶';
     pairs.push({price,qty,spec});
@@ -51,8 +72,7 @@ export function parsePdfEntries(lines){
     const e=parseEntryLine(line);
     const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
     const isEnTitle = !zhChars && /[A-Za-z]/.test(line) && !/\d/.test(line);
-    const isZhCat = ZH_CAT_LINE.test(e.zh.replace(/\s+/g,''));
-    if(isEnTitle || isZhCat){ flush(); continue; }
+    if(isEnTitle || isCatLine(e,line)){ flush(); continue; }
     if(e.pairs.length){
       if(pending){
         // 价格独占一行：归属上一行品名
@@ -77,6 +97,43 @@ export function parsePdfEntries(lines){
   });
   return out;
 }
+
+// 整单解析：按分类标题行分节，输出 [{catName, entries}]；catName=null 表示标题前的未分类内容
+export function parsePdfSections(lines){
+  const sections=[]; let cur=null; let pending=null;
+  const flush=()=>{
+    if(pending && pending.zh && cur) cur.entries.push(pending);
+    pending=null;
+  };
+  const newSection=name=>{ flush(); cur={catName:name,entries:[]}; sections.push(cur); };
+  for(const line of lines){
+    const e=parseEntryLine(line);
+    const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
+    const isEnTitle = !zhChars && /[A-Za-z]/.test(line) && !/\d/.test(line);
+    if(isCatLine(e,line)){ newSection(normCatLine(e.zh)); continue; }
+    if(isEnTitle){ flush(); continue; }
+    if(!cur) newSection(null);
+    if(e.pairs.length){
+      if(pending){ pending.pairs=e.pairs; flush(); }
+      else if(zhChars>=2){ flush(); cur.entries.push({zh:e.zh,en:e.en,pairs:e.pairs,raw:line}); }
+      continue;
+    }
+    if(zhChars<2) continue;
+    if(pending) flush();
+    pending={zh:e.zh,en:e.en,pairs:[],raw:line};
+  }
+  flush();
+  // 每节内分组价向上继承
+  sections.forEach(s=>{
+    let lastPairs=[];
+    s.entries.forEach(en=>{
+      if(en.pairs.length) lastPairs=en.pairs;
+      else if(lastPairs.length) en.pairs=lastPairs.map(p=>({...p,inherited:true}));
+    });
+  });
+  return sections.filter(s=>s.entries.length);
+}
+export function isSystemCat(name){ return SYSTEM_CAT_NAMES.has(normCatLine(name)); }
 
 export function priceTextFromPairs(pairs){
   if(!pairs||!pairs.length) return '';
