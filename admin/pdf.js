@@ -72,7 +72,8 @@ export function parsePdfEntries(lines){
     const e=parseEntryLine(line);
     const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
     const isEnTitle = !zhChars && /[A-Za-z]/.test(line) && !/\d/.test(line);
-    if(isEnTitle || isCatLine(e,line)){ flush(); continue; }
+    if(isCatLine(e,line)){ flush(); continue; }
+    if(isEnTitle){ if(pending && e.en) pending.en=pending.en||e.en; continue; }
     if(e.pairs.length){
       if(pending){
         // 价格独占一行：归属上一行品名
@@ -81,10 +82,17 @@ export function parsePdfEntries(lines){
       } else if(zhChars>=2){
         flush();
         out.push({zh:e.zh,en:e.en,pairs:e.pairs,raw:line});
+      } else if(out.length){
+        // 纯价格行（常见为 /3瓶 套餐价独占一行）：并入上一单品
+        out[out.length-1].pairs.push(...e.pairs);
       }
       continue;
     }
-    if(zhChars<2) continue;
+    if(zhChars<2){
+      // 英文译名行（可能含 12 Years 等数字）：挂到上一中文名
+      if(pending && /[A-Za-z]/.test(line) && e.en) pending.en=pending.en||e.en;
+      continue;
+    }
     if(pending) flush();
     pending={zh:e.zh,en:e.en,pairs:[],raw:line};
   }
@@ -111,14 +119,22 @@ export function parsePdfSections(lines){
     const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
     const isEnTitle = !zhChars && /[A-Za-z]/.test(line) && !/\d/.test(line);
     if(isCatLine(e,line)){ newSection(normCatLine(e.zh)); continue; }
-    if(isEnTitle){ flush(); continue; }
+    if(isEnTitle){ if(pending && e.en) pending.en=pending.en||e.en; continue; }
     if(!cur) newSection(null);
     if(e.pairs.length){
       if(pending){ pending.pairs=e.pairs; flush(); }
       else if(zhChars>=2){ flush(); cur.entries.push({zh:e.zh,en:e.en,pairs:e.pairs,raw:line}); }
+      else if(cur.entries.length){
+        // 纯价格行（常见为 /3瓶 套餐价独占一行）：并入上一单品
+        cur.entries[cur.entries.length-1].pairs.push(...e.pairs);
+      }
       continue;
     }
-    if(zhChars<2) continue;
+    if(zhChars<2){
+      // 英文译名行（可能含 12 Years 等数字）：挂到上一中文名
+      if(pending && /[A-Za-z]/.test(line) && e.en) pending.en=pending.en||e.en;
+      continue;
+    }
     if(pending) flush();
     pending={zh:e.zh,en:e.en,pairs:[],raw:line};
   }
