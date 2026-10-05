@@ -24,7 +24,8 @@ function serializeDoc(doc){ return doc.body.innerHTML; }
 $('#g-btn').onclick=()=>{
   const pwd=$('#g-pwd').value.trim();
   if(pwd!=='ph666'){ $('#g-err').textContent='密码错误'; return; }
-  cfg.pat=$('#g-pat').value.trim();
+  const patInput=$('#g-pat').value.trim();
+  if(patInput) cfg.pat=patInput;   // 令牌留空时保留已保存的，不会被清空
   cfg.owner=$('#g-owner').value.trim()||'georgezhou2024';
   cfg.repo=$('#g-repo').value.trim()||'ktv-booking';
   cfg.branch=$('#g-branch').value.trim()||'main';
@@ -609,7 +610,7 @@ function syncStoreKeys(){
 // ---------- 推送 ----------
 $('#btn-push').onclick=pushAll;
 async function pushAll(){
-  if(!cfg.pat){ toast('请退出并填入 GitHub 令牌后再推送'); return; }
+  if(!cfg.pat){ toast('请点右上角「令牌设置」填入 GitHub 令牌后再推送',3000); return; }
   if(hasBlockingError()){ toast('存在必须修正的问题，请先处理'); return; }
   if(!confirm(`确认推送 ${stages.length} 项改动到线上？\n推送后约 1 分钟自动上线。`)) return;
   const btn=$('#btn-push'); btn.disabled=true; btn.textContent='推送中…';
@@ -671,7 +672,7 @@ document.addEventListener('click',e=>{
   deploySystem();
 });
 async function deploySystem(){
-  if(!cfg.pat){ toast('请退出并填入 GitHub 令牌'); return; }
+  if(!cfg.pat){ toast('请点右上角「令牌设置」填入 GitHub 令牌',3000); return; }
   if(!confirm('将把后台程序（admin 5 个文件）、菜单首页和 5 个数据文件同步到线上，继续？')) return;
   const log=document.querySelector('#deploy-log'); const btn=deployBtn();
   btn.disabled=true;
