@@ -5,7 +5,7 @@ import * as PDFR from './pdf.js';
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const STORE_KEYS=E.STORE_KEYS;
+let STORE_KEYS=E.STORE_KEYS.slice(); // 启动后由 data/stores.json 动态覆盖
 const CFG_KEY='ph_admin_cfg_v1';
 const SESS_KEY='ph_admin_session';
 let cfg={pat:'',owner:'georgezhou2024',repo:'ktv-booking',branch:'main'};
@@ -40,15 +40,17 @@ async function enter(){
   $('#gate').style.display='none';
   $('#topbar').style.display='flex'; $('#nav').style.display='flex'; $('#app').style.display='block'; $('#push-bar').style.display='flex';
   await loadData();
-  fillSelects(); renderEdit(); renderStage(); renderHistory();
-  $('#conn').classList.add('ok');
-  $('#conn-txt').textContent=`${cfg.owner}/${cfg.repo} · `+(cfg.pat?'已连接（可推送）':'只读（未填令牌）');
+  fillSelects(); renderEdit(); renderStage(); renderHistory(); renderStores();
+  updateConn();
 }
 async function loadData(){
   const stores={};
+  const manifest=await (await fetch('../data/stores.json?t='+Date.now())).json();
+  STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
+  if(!STORE_KEYS.includes(activeStore)) activeStore=STORE_KEYS[0];
   await Promise.all(STORE_KEYS.map(async k=>{ stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json(); }));
   const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
-  DATA={stores,shisha};
+  DATA={stores,shisha,storesList:manifest};
 }
 
 // ---------- 分类 ----------
@@ -304,14 +306,19 @@ function renderStage(){
 }
 function undoStage(i){
   const s=stages[i];
-  if(s.kind==='cat'){
+  if(s.group){
+    const g=s.group;
+    stages.filter(x=>x.group===g).forEach(x=>{ if(x.kind==='file') restoreFileObj(x); });
+    stages=stages.filter(x=>x.group!==g);
+  } else if(s.kind==='cat'){
     setCatHtml(s.store,findRef(s.store,s.refKey),s.before);
     stages=stages.filter((x,j)=>!(j>=i&&x.kind==='cat'&&x.store===s.store&&x.refKey===s.refKey));
   } else {
     restoreFileObj(s);
     stages=stages.filter((_,j)=>j!==i);
   }
-  refreshAll(); toast('已撤销');
+  fillSelects();
+  refreshAll(); renderStores(); toast('已撤销');
 }
 $('#btn-discard').onclick=discardAll;
 $('#btn-discard-m').onclick=discardAll;
@@ -319,13 +326,13 @@ function discardAll(){
   if(!confirm('放弃全部改动并还原菜单？')) return;
   // 从后向前还原
   for(let i=stages.length-1;i>=0;i--){ const s=stages[i]; if(s.kind==='cat') setCatHtml(s.store,findRef(s.store,s.refKey),s.before); else restoreFileObj(s); }
-  stages=[]; refreshAll(); toast('已全部还原');
+  stages=[]; fillSelects(); refreshAll(); renderStores(); toast('已全部还原');
 }
 function renderWarnings(){
   const errs=[],warns=[];
   try{
     const dom={parse:h=>parseDoc(h)};
-    const cells=E.buildCells(DATA.stores,dom,DATA.shisha);
+    const cells=E.buildCells(DATA.stores,dom,DATA.shisha,STORE_KEYS);
     const clusters=E.clusterCells(cells);
     const {rows}=E.buildRows(clusters,STORE_KEYS);
     rows.forEach(r=>{ if(r.diff>0&&r.pct>=30) warns.push(`<b>${esc(r.display)}</b> 门店价差 ${r.pct.toFixed(0)}%（¥${r.min} ~ ¥${r.max}），请确认`); });
@@ -367,7 +374,19 @@ async function loadScript(src){
   return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('脚本加载失败：'+src)); document.head.appendChild(s); });
 }
 async function handlePdfFile(file){
+  const status=html=>{ $('#pdf-result').innerHTML=html; };
   try{
+    // 图片：直接 OCR
+    if(file.type && file.type.startsWith('image/')){
+      status('<div class="pdf-hint">图片 OCR 识别中 0%…（首次加载中英文语言包约 10-30 秒）</div>');
+      const canvas=await imageFileToCanvas(file);
+      const lines=await ocrCanvases([canvas],p=>{
+        status(`<div class="pdf-hint">图片 OCR 识别中 ${Math.round(p*100)}%…</div>`);
+      });
+      $('#pdf-result').innerHTML='';
+      runReconcile(lines);
+      return;
+    }
     if(!pdfLibs.pdfjs){
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
       pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -375,33 +394,85 @@ async function handlePdfFile(file){
     }
     const buf=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    let lines=[];
+    let lines=[]; const ocrJobs=[];
+    status(`<div class="pdf-hint">PDF 解析中（共 ${pdf.numPages} 页）…</div>`);
     for(let p=1;p<=pdf.numPages;p++){
       const page=await pdf.getPage(p);
       const tc=await page.getTextContent();
-      lines=lines.concat(PDFR.linesFromTextItems(tc.items));
+      const pl=PDFR.linesFromTextItems(tc.items);
+      if(pl.length<3){
+        // 该页几乎无文字层 → 扫描页，高清渲染后 OCR
+        const vp=page.getViewport({scale:3});
+        const canvas=document.createElement('canvas'); canvas.width=vp.width; canvas.height=vp.height;
+        await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+        ocrJobs.push({p,canvas});
+      } else lines=lines.concat(pl);
     }
-    if(lines.length<5){ // 疑似扫描件 → OCR
-      toast('未检测到文字，开始 OCR 识别（稍候）',3000);
-      lines=await ocrPdf(pdf);
+    for(const job of ocrJobs){
+      status(`<div class="pdf-hint">第 ${job.p}/${pdf.numPages} 页是扫描件，OCR 识别中 0%…（首次加载语言包约 10-30 秒）</div>`);
+      const pl=await ocrCanvases([job.canvas],p=>{
+        status(`<div class="pdf-hint">第 ${job.p}/${pdf.numPages} 页是扫描件，OCR 识别中 ${Math.round(p*100)}%…</div>`);
+      });
+      lines=lines.concat(pl);
     }
+    if(!lines.length){ status('<div class="warn-box err">未识别到任何文字，请换用清晰 PDF/图片，或改用「粘贴菜单文字」。</div>'); return; }
+    $('#pdf-result').innerHTML=ocrJobs.length?`<div class="pdf-hint">OCR 完成 ${ocrJobs.length} 页（识别结果请人工核对品名与价格）</div>`:'';
     runReconcile(lines);
   }catch(err){
-    $('#pdf-result').innerHTML=`<div class="warn-box err">PDF 解析失败：${esc(err.message)}<br>可改用「粘贴菜单文字」方式。</div>`;
+    $('#pdf-result').innerHTML=`<div class="warn-box err">PDF/图片解析失败：${esc(err.message)}<br>可改用「粘贴菜单文字」方式。</div>`;
   }
 }
-async function ocrPdf(pdf){
+function imageFileToCanvas(file){
+  return new Promise((res,rej)=>{
+    const img=new Image(); const u=URL.createObjectURL(file);
+    img.onload=()=>{
+      const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
+      c.getContext('2d').drawImage(img,0,0); URL.revokeObjectURL(u); res(c);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error('图片读取失败')); };
+    img.src=u;
+  });
+}
+// 复用单个 tesseract worker 识别多张高清 canvas（中英文）
+async function ocrCanvases(canvases,onProgress){
   if(!pdfLibs.tess){ await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'); pdfLibs.tess=true; }
+  const worker=await Tesseract.createWorker(['chi_sim','eng'],1,{logger:m=>{
+    if(m.status==='recognizing text'&&onProgress) onProgress(m.progress);
+  }});
+  await worker.setParameters({tessedit_pageseg_mode:'6'});
   let text='';
-  for(let p=1;p<=pdf.numPages;p++){
-    const page=await pdf.getPage(p);
-    const vp=page.getViewport({scale:2});
-    const canvas=document.createElement('canvas'); canvas.width=vp.width; canvas.height=vp.height;
-    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-    const {data}=await Tesseract.recognize(canvas,'chi_sim+eng');
-    text+='\n'+data.text;
-  }
+  try{
+    for(const raw of canvases){
+      const canvas=preprocessForOcr(raw);
+      const {data}=await worker.recognize(canvas);
+      text+='\n'+data.text;
+    }
+  }finally{ await worker.terminate(); }
   return PDFR.linesFromText(text);
+}
+// OCR 预处理：灰度 → 深色底自动反色 → 百分位自动对比度（不二值化，交给 tesseract 内部处理）
+function preprocessForOcr(src){
+  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
+  const ctx=c.getContext('2d'); ctx.drawImage(src,0,0);
+  const img=ctx.getImageData(0,0,c.width,c.height), d=img.data, n=d.length/4;
+  const g=new Uint8Array(n); const hist=new Array(256).fill(0);
+  let sum=0;
+  for(let i=0;i<n;i++){
+    const v=(0.299*d[4*i]+0.587*d[4*i+1]+0.114*d[4*i+2])|0;
+    g[i]=v; sum+=v;
+  }
+  const dark=sum/n<128; // 深色底（菜单常见）
+  for(let i=0;i<n;i++){ const v=dark?255-g[i]:g[i]; hist[v]++; }
+  const clip=0.015; let lo=0,hi=255,acc=0;
+  for(let t=0;t<256;t++){ acc+=hist[t]; if(acc>=n*clip){ lo=t; break; } }
+  acc=0; for(let t=0;t<256;t++){ acc+=hist[t]; if(acc>=n*(1-clip)){ hi=t; break; } }
+  for(let i=0;i<n;i++){
+    let v=dark?255-g[i]:g[i];
+    v=Math.max(0,Math.min(255,(v-lo)*255/Math.max(1,hi-lo)));
+    d[4*i]=d[4*i+1]=d[4*i+2]=v; d[4*i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  return c;
 }
 function runReconcile(lines){
   const sk=$('#pdf-store').value;
@@ -500,23 +571,39 @@ async function renderHistory(){
   }
 }
 async function rollback(sha){
-  if(!confirm('将把 5 个菜单数据文件恢复到该版本并放入待发布（不会立即上线，推送后才生效）。继续？')) return;
+  if(!confirm('将把菜单数据文件（含门店清单）恢复到该版本并放入待发布（不会立即上线，推送后才生效）。继续？')) return;
   try{
-    const files=['acme','phroom','eros','sensory','shisha'];
+    const files=['stores','acme','phroom','eros','sensory','shisha'];
     for(const f of files){
-      const j=await ghApi(`contents/data/${f}.json?ref=${sha}`);
+      let j;
+      try{ j=await ghApi(`contents/data/${f}.json?ref=${sha}`); }catch(e){ if(f==='stores') continue; throw e; }
       const txt=decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
       const after=JSON.parse(txt);
-      const before=f==='shisha'?JSON.parse(JSON.stringify(DATA.shisha)):JSON.parse(JSON.stringify(DATA.stores[f]));
+      const before=f==='shisha'?JSON.parse(JSON.stringify(DATA.shisha))
+        :f==='stores'?JSON.parse(JSON.stringify(DATA.storesList))
+        :JSON.parse(JSON.stringify(DATA.stores[f]));
       stages.push({kind:'file',path:`data/${f}.json`,beforeObj:before,afterObj:after,desc:`回滚 data/${f}.json 到 ${sha.slice(0,7)}`,tag:'rollback'});
-      if(f==='shisha') DATA.shisha=after; else DATA.stores[f]=after;
+      if(f==='shisha') DATA.shisha=after;
+      else if(f==='stores'){ DATA.storesList=after; syncStoreKeys(); }
+      else DATA.stores[f]=after;
     }
+    fillSelects();
     refreshAll(); toast('历史版本已放入待发布'); document.querySelector('[data-panel=stage]').click();
   }catch(err){ toast('回滚失败：'+err.message,3000); }
 }
 function restoreFileObj(s){
-  if(s.path==='data/shisha.json') DATA.shisha=s.beforeObj;
-  else { const k=s.path.split('/')[1].replace('.json',''); DATA.stores[k]=s.beforeObj; }
+  if(s.path==='data/shisha.json'){ DATA.shisha=s.beforeObj; return; }
+  if(s.path==='data/stores.json'){ DATA.storesList=s.beforeObj; syncStoreKeys(); return; }
+  const k=s.path.split('/')[1].replace('.json','');
+  if(s.beforeObj==null){ delete DATA.stores[k]; } else DATA.stores[k]=s.beforeObj;
+  syncStoreKeys();
+}
+function syncStoreKeys(){
+  const keys=(DATA.storesList||[]).map(m=>m.key);
+  if(keys.length){
+    STORE_KEYS.splice(0,STORE_KEYS.length,...keys);
+    if(!STORE_KEYS.includes(activeStore)) activeStore=STORE_KEYS[0];
+  }
 }
 
 // ---------- 推送 ----------
@@ -535,10 +622,9 @@ async function pushAll(){
       let content;
       const fs=stages.find(s=>fileOf(s)===path && s.kind==='file');
       if(fs) content=JSON.stringify(fs.afterObj,null,2)+'\n';
-      else {
-        const obj=path==='data/shisha.json'?DATA.shisha:DATA.stores[path.split('/')[1].replace('.json','')];
-        content=JSON.stringify(obj,null,2)+'\n';
-      }
+      else if(path==='data/shisha.json') content=JSON.stringify(DATA.shisha,null,2)+'\n';
+      else if(path==='data/stores.json') content=JSON.stringify(DATA.storesList,null,2)+'\n';
+      else content=JSON.stringify(DATA.stores[path.split('/')[1].replace('.json','')],null,2)+'\n';
       let sha=null;
       try{ const ex=await ghApi(`contents/${path}?ref=${cfg.branch}`); sha=ex.sha; }catch(e){ /* 新文件 404 */ }
       const body=b64Unicode(content);
@@ -572,6 +658,7 @@ const SYS_FILES=[
   ['./admin.js','admin/admin.js'],
   ['./index.html','admin/index.html'],
   ['./price.html','admin/price.html'],
+  ['../data/stores.json','data/stores.json'],
   ['../data/acme.json','data/acme.json'],
   ['../data/phroom.json','data/phroom.json'],
   ['../data/eros.json','data/eros.json'],
@@ -611,12 +698,99 @@ async function deploySystem(){
   }finally{ btn.disabled=false; }
 }
 
+// ---------- 门店管理 ----------
+function countItems(d){
+  let n=0;
+  d.categories.forEach(c=>{ const h=d.content[c.id]; if(h) n+=(h.match(/class="[^"]*\bitem\b/g)||[]).length; });
+  return n;
+}
+function renderStores(){
+  const box=$('#store-list'); if(!box||!DATA) return;
+  box.innerHTML=STORE_KEYS.map(sk=>{
+    const d=DATA.stores[sk]; if(!d) return '';
+    const cats=d.categories.map(c=>`<span class="cat-chip">${esc(c.name)}</span>`).join('')||'<span class="pdf-hint">暂无分类</span>';
+    return `<div class="store-row">
+      <div class="sr-head">
+        <div><div class="sr-name">${esc(d.name)} <span class="sr-meta">(${esc(sk)})</span></div>
+        <div class="sr-meta">${d.categories.length} 个分类 · ${countItems(d)} 个单品${sk==='phroom'?' · 含水烟板块':''}</div></div>
+      </div>
+      <div style="margin-top:8px">${cats}</div>
+      <div class="sr-addcat"><input placeholder="给该门店新增分类名称，如：清酒" data-catkey="${sk}"><button class="btn" data-addcat="${sk}">+ 添加分类</button></div>
+    </div>`;
+  }).join('');
+  $$('#store-list [data-addcat]').forEach(b=>b.onclick=()=>{
+    const sk=b.dataset.addcat;
+    const inp=box.querySelector(`[data-catkey="${sk}"]`);
+    const name=inp.value.trim();
+    if(!name){ toast('请输入分类名称'); return; }
+    addCategory(sk,name); inp.value='';
+  });
+}
+function uniqueCatId(d){
+  const ids=new Set(d.categories.map(c=>c.id));
+  let i=d.categories.length+1,id;
+  do{ id='cat'+i; i++; }while(ids.has(id));
+  return id;
+}
+function addCategory(sk,name){
+  const d=DATA.stores[sk];
+  if(d.categories.some(c=>c.name===name)){ toast('该分类已存在'); return; }
+  const before=JSON.parse(JSON.stringify(d));
+  const id=uniqueCatId(d);
+  d.categories.push({id,name}); d.content[id]='';
+  const after=JSON.parse(JSON.stringify(d));
+  stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:before,afterObj:after,desc:`${d.name}：新增分类「${name}」`,tag:'add'});
+  DATA.stores[sk]=after;
+  fillSelects(); renderStores(); renderStage();
+  toast('分类已加入待发布');
+}
+$('#btn-ns-add').onclick=()=>{
+  const key=$('#ns-key').value.trim().toLowerCase();
+  const name=$('#ns-name').value.trim();
+  const sub=$('#ns-sub').value.trim();
+  const catName=$('#ns-cat').value.trim();
+  if(!/^[a-z0-9]{2,12}$/.test(key)){ toast('门店键需为 2-12 位英文小写/数字'); return; }
+  if(STORE_KEYS.includes(key)){ toast('该门店键已存在'); return; }
+  if(!name){ toast('请填写显示名称'); return; }
+  const data={name,subtitle:sub||name,footer:'— '+(sub||name)+' —',theme:'',categories:[],content:{}};
+  if(catName){ data.categories.push({id:'cat1',name:catName}); data.content['cat1']=''; }
+  const manifestBefore=JSON.parse(JSON.stringify(DATA.storesList));
+  DATA.stores[key]=data;
+  DATA.storesList.push({key,name,sub:sub||''});
+  syncStoreKeys();
+  const manifestAfter=JSON.parse(JSON.stringify(DATA.storesList));
+  const gid='ns-'+key+'-'+Date.now();
+  stages.push({kind:'file',path:`data/${key}.json`,beforeObj:null,afterObj:JSON.parse(JSON.stringify(data)),desc:`新门店 ${name}`,tag:'add',group:gid});
+  stages.push({kind:'file',path:'data/stores.json',beforeObj:manifestBefore,afterObj:manifestAfter,desc:`门店清单：加入 ${name}`,tag:'add',group:gid});
+  activeStore=key;
+  $('#ns-key').value=$('#ns-name').value=$('#ns-sub').value=$('#ns-cat').value='';
+  fillSelects(); renderStores(); renderStage();
+  toast('新门店已加入待发布，推送后上线');
+};
+
+// ---------- 令牌补填弹窗 ----------
+function updateConn(){
+  $('#conn').classList.add('ok');
+  $('#conn-txt').textContent=`${cfg.owner}/${cfg.repo} · `+(cfg.pat?'已连接（可推送）':'只读（未填令牌）');
+}
+$('#btn-pat-set').onclick=()=>{ $('#pm-pat').value=cfg.pat||''; $('#pat-modal').style.display='flex'; $('#pm-pat').focus(); };
+$('#pm-cancel').onclick=()=>{ $('#pat-modal').style.display='none'; };
+$('#pat-modal').onclick=e=>{ if(e.target.id==='pat-modal') $('#pat-modal').style.display='none'; };
+$('#pm-save').onclick=()=>{
+  cfg.pat=$('#pm-pat').value.trim();
+  localStorage.setItem(CFG_KEY,JSON.stringify(cfg));
+  $('#pat-modal').style.display='none';
+  updateConn(); renderStage();
+  toast(cfg.pat?'令牌已保存，可以推送':'已清除令牌（只读）');
+};
+
 // ---------- 导航 ----------
 $$('#nav button').forEach(b=>b.onclick=()=>{
   $$('#nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   $$('.panel').forEach(p=>p.classList.remove('on'));
   $('#panel-'+b.dataset.panel).classList.add('on');
   if(b.dataset.panel==='history') renderHistory();
+  if(b.dataset.panel==='stores') renderStores();
 });
 
 // ---------- 启动 ----------
