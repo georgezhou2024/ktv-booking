@@ -381,9 +381,12 @@ async function handlePdfFile(file){
     // 图片：直接 OCR
     if(file.type && file.type.startsWith('image/')){
       status('<div class="pdf-hint">图片 OCR 识别中 0%…（首次加载中英文语言包约 10-30 秒）</div>');
-      const canvas=await imageFileToCanvas(file);
+      let canvas0=await imageFileToCanvas(file);
+      const canvas=upscaleForOcr(canvas0);
       const lines=await ocrCanvases([canvas],p=>{
-        status(`<div class="pdf-hint">图片 OCR 识别中 ${Math.round(p*100)}%…</div>`);
+        status(`<div class="pdf-hint">图片 OCR 识别中 ${Math.round(p*100)}%…（每页最多三轮方案择优）</div>`);
+      },(pi,tp,phase)=>{
+        status(`<div class="pdf-hint">图片 OCR · ${phase}…</div>`);
       });
       $('#pdf-result').innerHTML='';
       runReconcile(lines);
@@ -403,8 +406,8 @@ async function handlePdfFile(file){
       const tc=await page.getTextContent();
       const pl=PDFR.linesFromTextItems(tc.items);
       if(pl.length<3){
-        // 该页几乎无文字层 → 扫描页，高清渲染后 OCR
-        const vp=page.getViewport({scale:3});
+        // 该页几乎无文字层 → 扫描页，4 倍高清渲染后 OCR
+        const vp=page.getViewport({scale:4});
         const canvas=document.createElement('canvas'); canvas.width=vp.width; canvas.height=vp.height;
         await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
         ocrJobs.push({p,canvas});
@@ -413,7 +416,9 @@ async function handlePdfFile(file){
     for(const job of ocrJobs){
       status(`<div class="pdf-hint">第 ${job.p}/${pdf.numPages} 页是扫描件，OCR 识别中 0%…（首次加载语言包约 10-30 秒）</div>`);
       const pl=await ocrCanvases([job.canvas],p=>{
-        status(`<div class="pdf-hint">第 ${job.p}/${pdf.numPages} 页是扫描件，OCR 识别中 ${Math.round(p*100)}%…</div>`);
+        status(`<div class="pdf-hint">第 ${job.p}/${pdf.numPages} 页扫描件 OCR ${Math.round(p*100)}%…（每页最多三轮方案择优）</div>`);
+      },(pi,tp,phase)=>{
+        status(`<div class="pdf-hint">第 ${job.p}/${pdf.numPages} 页扫描件 OCR · ${phase}…</div>`);
       });
       lines=lines.concat(pl);
     }
@@ -435,22 +440,57 @@ function imageFileToCanvas(file){
     img.src=u;
   });
 }
-// 复用单个 tesseract worker 识别多张高清 canvas（中英文）
-async function ocrCanvases(canvases,onProgress){
+// 小图先放大到适合 OCR 的尺寸（目标宽 ≥1600；已够清晰的图不再放大，避免插值糊化笔画）
+function upscaleForOcr(src){
+  if(src.width>=1400) return src;
+  const k=Math.min(2.5,Math.max(1.5,1600/src.width));
+  const c=document.createElement('canvas'); c.width=Math.round(src.width*k); c.height=Math.round(src.height*k);
+  const ctx=c.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  ctx.drawImage(src,0,0,c.width,c.height);
+  return c;
+}
+// 复用单个 tesseract worker 识别多张高清 canvas（中英文，多方案按置信度择优）
+async function ocrCanvases(canvases,onProgress,onPhase){
   if(!pdfLibs.tess){ await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'); pdfLibs.tess=true; }
   const worker=await Tesseract.createWorker(['chi_sim','eng'],1,{logger:m=>{
     if(m.status==='recognizing text'&&onProgress) onProgress(m.progress);
   }});
-  await worker.setParameters({tessedit_pageseg_mode:'6'});
+  await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
   let text='';
   try{
-    for(const raw of canvases){
-      const canvas=preprocessForOcr(raw);
-      const {data}=await worker.recognize(canvas);
-      text+='\n'+data.text;
+    for(let ci=0;ci<canvases.length;ci++){
+      const raw=canvases[ci];
+      // 方案 A：灰度+反色+自动对比度
+      const vA=preprocessForOcr(raw);
+      if(onPhase) onPhase(ci+1,canvases.length,'标准增强');
+      let best=await worker.recognize(vA);
+      // 置信度不足 → 方案 B：自适应局部二值化（深色底/花纹底）
+      if(!best.data.confidence || best.data.confidence<72){
+        if(onPhase) onPhase(ci+1,canvases.length,'局部二值化复核');
+        const vB=adaptiveBinarize(raw);
+        await worker.setParameters({tessedit_pageseg_mode:'6'});
+        const rB=await worker.recognize(vB);
+        if((rB.data.confidence||0)>(best.data.confidence||0)) best=rB;
+      }
+      // 仍低 → 方案 C：锐化 + PSM4 版面复核
+      if(!best.data.confidence || best.data.confidence<60){
+        if(onPhase) onPhase(ci+1,canvases.length,'锐化复核');
+        const vC=sharpenCanvas(vA);
+        await worker.setParameters({tessedit_pageseg_mode:'4'});
+        const rC=await worker.recognize(vC);
+        if((rC.data.confidence||0)>(best.data.confidence||0)) best=rC;
+      }
+      await worker.setParameters({tessedit_pageseg_mode:'6'});
+      text+='\n'+cleanOcrText(best.data.text);
     }
   }finally{ await worker.terminate(); }
   return PDFR.linesFromText(text);
+}
+// OCR 文本清理：去掉中文字之间被插入的空格（多次收敛）
+function cleanOcrText(t){
+  let s=t||'';
+  for(let i=0;i<3;i++) s=s.replace(/([一-鿿])[ \t]+(?=[一-鿿])/g,'$1');
+  return s;
 }
 // OCR 预处理：灰度 → 深色底自动反色 → 百分位自动对比度（不二值化，交给 tesseract 内部处理）
 function preprocessForOcr(src){
@@ -476,35 +516,118 @@ function preprocessForOcr(src){
   ctx.putImageData(img,0,0);
   return c;
 }
+// 自适应局部二值化：以模糊背景为阈值，黑字白底（花纹底/光照不均时更稳）
+function adaptiveBinarize(src){
+  const w=src.width,h=src.height;
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx=c.getContext('2d'); ctx.drawImage(src,0,0);
+  const img=ctx.getImageData(0,0,w,h), d=img.data, n=w*h;
+  const g=new Float32Array(n); let sum=0;
+  for(let i=0;i<n;i++){ const v=0.299*d[4*i]+0.587*d[4*i+1]+0.114*d[4*i+2]; g[i]=v; sum+=v; }
+  const dark=sum/n<128;
+  const sw=Math.max(8,Math.round(w/16)), sh=Math.max(8,Math.round(h/16));
+  const small=document.createElement('canvas'); small.width=sw; small.height=sh;
+  const sctx=small.getContext('2d'); sctx.drawImage(src,0,0,sw,sh);
+  const sd=sctx.getImageData(0,0,sw,sh).data;
+  const bg=new Float32Array(sw*sh);
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+    const i=y*sw+x; let v=0.299*sd[4*i]+0.587*sd[4*i+1]+0.114*sd[4*i+2];
+    if(dark) v=255-v;
+    bg[i]=v;
+  }
+  const delta=16;
+  for(let y=0;y<h;y++){
+    const sy=Math.min(sh-1,Math.floor(y*sh/h));
+    for(let x=0;x<w;x++){
+      const sx=Math.min(sw-1,Math.floor(x*sw/w));
+      let v=g[y*w+x]; if(dark) v=255-v;
+      const ink=v < bg[sy*sw+sx]-delta;
+      const out=ink?0:255;
+      const i=(y*w+x)*4; d[i]=d[i+1]=d[i+2]=out; d[i+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  return c;
+}
+// 3x3 锐化，提升细笔画清晰度
+function sharpenCanvas(src){
+  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
+  const ctx=c.getContext('2d'); ctx.drawImage(src,0,0);
+  const img=ctx.getImageData(0,0,c.width,c.height), d=img.data, w=c.width,h=c.height;
+  const s=new Uint8ClampedArray(d);
+  const k=(x,y,b)=>s[((y*w+x)*4)+b];
+  for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
+    const i=(y*w+x)*4;
+    for(let b=0;b<3;b++) d[i+b]=5*k(x,y,b)-k(x-1,y,b)-k(x+1,y,b)-k(x,y-1,b)-k(x,y+1,b);
+  }
+  ctx.putImageData(img,0,0);
+  return c;
+}
 // ---------- 整单自动识别分类 ----------
 function runReconcileWhole(sk,lines){
   const sections=PDFR.parsePdfSections(lines);
   const box=$('#pdf-result');
   const model=[]; const skipped=[];
-  let total=0,chg=0,rev=0,add=0,miss=0,newCats=0;
   sections.forEach(sec=>{
-    const catName=sec.catName||'未分类';
-    if(PDFR.isSystemCat(catName)){ skipped.push(catName); return; }
-    const existId=matchCategory(sk,catName);
-    const ref=existId?findRef(sk,existId):null;
-    const items=ref?collectItems(getCatHtml(sk,ref)).map(it=>({
-      ...it, zhStripped:E.zhStripped(it.zhName), en:E.enCore(it.enRaw||it.zhName)
-    })):[];
-    const r=PDFR.reconcile(sec.entries,items,existId||'newcat');
-    const isNew=!ref;
-    if(isNew) newCats++;
-    total+=sec.entries.length; chg+=r.changes.length; rev+=r.review.length; add+=r.adds.length; miss+=r.missing.length;
-    model.push({catName,isNew,refKey:existId,r});
+    const origName=sec.catName||'未分类';
+    if(PDFR.isSystemCat(origName)){ skipped.push(origName); return; }
+    model.push({origName,mode:'auto',targetKey:'',customName:'',entries:sec.entries});
   });
-  window.__pdfR={sk,mode:'whole',model};
-  const row=(si,type,title,body,checked)=>`<label class="rc-row ${type}"><input type="checkbox" data-sec="${si}" data-type="${type}" ${checked?'checked':''} style="margin-top:3px"><span>${title}${body}</span></label>`;
+  window.__pdfR={sk,mode:'whole',model,skipped};
+  model.forEach(sec=>resolveWholeSection(sk,sec));
+  renderWhole();
+}
+// 按用户选择的分类归属重新对账一个分段
+function resolveWholeSection(sk,sec){
+  let catName=sec.origName, refKey=null, isNew=true;
+  if(sec.mode==='existing' && sec.targetKey){
+    refKey=sec.targetKey; isNew=false;
+    const rf=findRef(sk,refKey); catName=rf?rf.label:catName;
+  }else if(sec.mode==='custom' && sec.customName.trim()){
+    catName=sec.customName.trim();
+    const id=matchCategory(sk,catName);
+    if(id){ refKey=id; isNew=false; }
+  }else{
+    const id=matchCategory(sk,sec.origName);
+    if(id && sec.origName!=='未分类'){ refKey=id; isNew=false; }
+  }
+  Object.assign(sec,{catName,refKey,isNew});
+  const ref=refKey?findRef(sk,refKey):null;
+  const items=ref?collectItems(getCatHtml(sk,ref)).map(it=>({
+    ...it, zhStripped:E.zhStripped(it.zhName), en:E.enCore(it.enRaw||it.zhName)
+  })):[];
+  sec.r=PDFR.reconcile(sec.entries,items,refKey||'newcat');
+}
+function renderWhole(){
+  const {sk,model,skipped}=window.__pdfR;
+  const box=$('#pdf-result');
+  let total=0,chg=0,rev=0,add=0,miss=0,newCats=0;
+  model.forEach(sec=>{
+    const r=sec.r; total+=r.changes.length+r.review.length+r.adds.length;
+    chg+=r.changes.length; rev+=r.review.length; add+=r.adds.length; miss+=r.missing.length;
+    if(sec.isNew) newCats++;
+  });
+  const catOptions=si=>{
+    const sec=model[si];
+    const cur=sec.mode==='existing'?sec.targetKey:'';
+    let o='<option value="auto"'+(sec.mode==='auto'?' selected':'')+'>自动（按识别名新建/匹配）</option>';
+    o+='<optgroup label="归入已有分类">'+catListPdf(sk).map(r=>`<option value="${r.key}"${r.key===cur?' selected':''}>${esc(r.label)}</option>`).join('')+'</optgroup>';
+    o+='<option value="custom"'+(sec.mode==='custom'?' selected':'')+'>手动新建分类…</option>';
+    return o;
+  };
+  const row=(si,type,body,checked)=>`<label class="rc-row ${type}"><input type="checkbox" data-sec="${si}" data-type="${type}" ${checked?'checked':''} style="margin-top:3px"><span>${body}</span></label>`;
   const bucket=(si,cls,title,arr,body,checked)=>!arr.length?'':`<div class="rc-bucket"><h3>${title}<span class="cnt">${arr.length}</span></h3>`+
-    arr.map((c,i)=>row(si,cls,title,body(c,i),checked)).join('')+'</div>';
-  let html=`<div class="pdf-hint">整单识别 ${sections.length} 个分类、${total} 个品名：自动改价 ${chg}、待确认 ${rev}、新增 ${add}、待下架提示 ${miss}；其中 <b>${newCats}</b> 个新分类将自动创建。逐条勾选后点底部「采纳」。</div>`;
+    arr.map(c=>row(si,cls,body(c),checked)).join('')+'</div>';
+  let html=`<div class="pdf-hint">整单识别 ${model.length} 个分类、${total} 个品名：自动改价 ${chg}、待确认 ${rev}、新增 ${add}、待下架提示 ${miss}；其中 <b>${newCats}</b> 个新分类将自动创建。识别错分类时，用每段右上角下拉改归属。逐条勾选后点底部「采纳」。</div>`;
   if(skipped.length) html+=`<div class="pdf-hint">已按规则跳过系统分类：${skipped.map(esc).join('、')}（不入菜单）。</div>`;
   model.forEach((sec,si)=>{
     const r=sec.r;
-    html+=`<div class="rc-section"><div class="rc-sec-head">分类：<b>${esc(sec.catName)}</b>${sec.isNew?' <span class="rc-newtag">新分类（采纳时自动创建）</span>':' <span class="rc-oldtag">已有分类</span>'}<span class="pdf-hint" style="margin-left:8px">识别 ${r.changes.length+r.review.length+r.adds.length+r.missing.length} 项</span></div>`;
+    html+=`<div class="rc-section"><div class="rc-sec-head" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span>分类：<b>${esc(sec.catName)}</b></span>
+      ${sec.isNew?'<span class="rc-newtag">新分类（采纳时自动创建）</span>':'<span class="rc-oldtag">已有分类</span>'}
+      <select class="rc-cat-sel" data-secsel="${si}" style="margin-left:auto">${catOptions(si)}</select>
+      <input class="rc-cat-new" data-seccus="${si}" placeholder="新分类名称" value="${esc(sec.customName)}" style="display:${sec.mode==='custom'?'inline-block':'none'};min-width:130px">
+      <span class="pdf-hint">识别 ${r.changes.length+r.review.length+r.adds.length+r.missing.length} 项</span></div>`;
     html+=bucket(si,'change','改价（默认采纳）',r.changes,c=>`
       <div><b>${esc(c.item.zhName)}</b></div>
       <div class="names">PDF：${esc(c.entry.zh)} ${esc(c.entry.en||'')}${c.inherited?'（分组继承价）':''}</div>
@@ -528,6 +651,18 @@ function runReconcileWhole(sk,lines){
   box.innerHTML=html;
   $('#btn-rc-clear').onclick=()=>{box.innerHTML='';};
   $('#btn-rc-adopt').onclick=adoptReconcileWhole;
+  $$('#pdf-result [data-secsel]').forEach(sel=>{
+    sel.onchange=()=>{
+      const sec=model[+sel.dataset.secsel];
+      if(sel.value==='custom'){ sec.mode='custom'; }
+      else if(sel.value==='auto'){ sec.mode='auto'; }
+      else { sec.mode='existing'; sec.targetKey=sel.value; }
+      resolveWholeSection(sk,sec); renderWhole();
+    };
+  });
+  $$('#pdf-result [data-seccus]').forEach(inp=>{
+    inp.onchange=()=>{ const sec=model[+inp.dataset.seccus]; sec.customName=inp.value; sec.mode='custom'; resolveWholeSection(sk,sec); renderWhole(); };
+  });
 }
 function pdfAddItemHtml(entry,newPrice){
   return `<div class="item"><div class="name">${esc(entry.zh)}${entry.en?` <span class="en-name">${esc(entry.en)}</span>`:''}</div><div class="price">${esc(newPrice)}</div></div>`;
@@ -537,7 +672,7 @@ function adoptReconcileWhole(){
   let adopted=0; const ensured=new Set();
   model.forEach((sec,si)=>{
     let ref=null;
-    const ensure=()=>{ if(!ref){ ref=ensureCategoryForPdf(sk,sec.catName); ensured.add(si); } return ref; };
+    const ensure=()=>{ if(!ref){ ref=sec.refKey?findRef(sk,sec.refKey):ensureCategoryForPdf(sk,sec.catName); ensured.add(si); } return ref; };
     // 按类型 + 行序精确取值：复选框在各自 bucket 中顺序与数组一致
     ['change','review','add'].forEach(type=>{
       const arr=type==='change'?sec.r.changes:type==='review'?sec.r.review:sec.r.adds;
@@ -695,7 +830,9 @@ function restoreFileObj(s){
   if(s.path==='data/shisha.json'){ DATA.shisha=s.beforeObj; return; }
   if(s.path==='data/stores.json'){ DATA.storesList=s.beforeObj; syncStoreKeys(); return; }
   const k=s.path.split('/')[1].replace('.json','');
-  if(s.beforeObj==null){ delete DATA.stores[k]; } else DATA.stores[k]=s.beforeObj;
+  if(s.afterObj==null){ DATA.stores[k]=s.beforeObj; }      // 撤销删除：还原文件
+  else if(s.beforeObj==null){ delete DATA.stores[k]; }     // 撤销新建：移除文件
+  else DATA.stores[k]=s.beforeObj;
   syncStoreKeys();
 }
 function syncStoreKeys(){
@@ -719,8 +856,14 @@ async function pushAll(){
     const stores=[...new Set(stages.flatMap(s=>s.kind==='cat'?(s.shisha?['水烟']:[DATA.stores[s.store].name]):[]))];
     const message=`菜单更新 ${today}（${stores.join('、')||'数据回滚'}，${stages.length}项）`;
     for(const path of files){
+      const fs=stages.filter(s=>fileOf(s)===path && s.kind==='file').pop();
+      // 删除文件（彻底删除门店）
+      if(fs && fs.afterObj==null){
+        const ex=await ghApi(`contents/${path}?ref=${cfg.branch}`);
+        await ghApi(`contents/${path}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,sha:ex.sha,branch:cfg.branch})});
+        continue;
+      }
       let content;
-      const fs=stages.find(s=>fileOf(s)===path && s.kind==='file');
       if(fs) content=JSON.stringify(fs.afterObj,null,2)+'\n';
       else if(path==='data/shisha.json') content=JSON.stringify(DATA.shisha,null,2)+'\n';
       else if(path==='data/stores.json') content=JSON.stringify(DATA.storesList,null,2)+'\n';
@@ -809,12 +952,17 @@ function renderStores(){
   box.innerHTML=STORE_KEYS.map(sk=>{
     const d=DATA.stores[sk]; if(!d) return '';
     const m=DATA.storesList.find(x=>x.key===sk)||{sub:''};
+    const hidden=!!m.hidden;
     const cats=d.categories.map(c=>`<span class="cat-chip">${esc(c.name)}</span>`).join('')||'<span class="pdf-hint">暂无分类</span>';
-    return `<div class="store-row" data-row="${sk}">
+    return `<div class="store-row${hidden?' hidden-store':''}" data-row="${sk}">
       <div class="sr-head">
-        <div><div class="sr-name">${esc(d.name)} <span class="sr-meta">(${esc(sk)}，键名不可改)</span></div>
+        <div><div class="sr-name">${esc(d.name)} <span class="sr-meta">(${esc(sk)}，键名不可改)</span>${hidden?' <span class="rc-newtag" style="background:#3a2a14;border-color:#8a6a2a;color:#e0b878">已隐藏（菜单/比价不显示）</span>':''}</div>
         <div class="sr-meta">${d.categories.length} 个分类 · ${countItems(d)} 个单品${sk==='phroom'?' · 含水烟板块':''}</div></div>
-        <button class="btn" data-edit="${sk}">编辑名称</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn" data-edit="${sk}">编辑名称</button>
+          <button class="btn" data-hide="${sk}">${hidden?'恢复显示':'隐藏'}</button>
+          <button class="btn del" data-del="${sk}">彻底删除</button>
+        </div>
       </div>
       <div class="sr-editbox" data-editbox="${sk}" style="display:none;margin-top:10px">
         <div class="grid-form">
@@ -850,6 +998,41 @@ function renderStores(){
     if(!name){ toast('显示名称不能为空'); return; }
     editStore(sk,name,sub);
   });
+  $$('#store-list [data-hide]').forEach(b=>b.onclick=()=>toggleHideStore(b.dataset.hide));
+  $$('#store-list [data-del]').forEach(b=>b.onclick=()=>{
+    const sk=b.dataset.del;
+    if(b.dataset.armed!=='1'){
+      b.dataset.armed='1'; b.textContent='再点一次确认删除'; b.classList.add('del-arm');
+      setTimeout(()=>{ if(b.isConnected){ b.dataset.armed='0'; b.textContent='彻底删除'; b.classList.remove('del-arm'); } },3500);
+      return;
+    }
+    deleteStore(sk);
+  });
+}
+function toggleHideStore(sk){
+  const m=DATA.storesList.find(x=>x.key===sk); if(!m) return;
+  const hiding=!m.hidden; const name=(DATA.stores[sk]&&DATA.stores[sk].name)||sk;
+  const before=JSON.parse(JSON.stringify(DATA.storesList));
+  if(hiding) m.hidden=true; else delete m.hidden;
+  const after=JSON.parse(JSON.stringify(DATA.storesList));
+  stages.push({kind:'file',path:'data/stores.json',beforeObj:before,afterObj:after,desc:`${name}：${hiding?'隐藏（菜单与比价不显示，可恢复）':'恢复显示'}`,tag:hiding?'del':'add'});
+  syncStoreKeys(); fillSelects(); renderStores(); renderStage();
+  toast(hiding?'已隐藏，推送后生效；随时可恢复':'已恢复显示，推送后生效');
+}
+function deleteStore(sk){
+  const d=DATA.stores[sk]; if(!d){ toast('门店数据不存在'); return; }
+  const name=d.name;
+  if(!confirm(`确认彻底删除「${name}」？\n\n将从门店清单移除并删除其数据文件，推送后菜单和比价都不再出现。\n删除前先进入待发布，推送前仍可整组撤销。`)) return;
+  const manifestBefore=JSON.parse(JSON.stringify(DATA.storesList));
+  const fileBefore=JSON.parse(JSON.stringify(d));
+  DATA.storesList.splice(0,DATA.storesList.length,...DATA.storesList.filter(x=>x.key!==sk));
+  delete DATA.stores[sk];
+  const manifestAfter=JSON.parse(JSON.stringify(DATA.storesList));
+  const gid='del-'+sk+'-'+Date.now();
+  stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:fileBefore,afterObj:null,desc:`${name}：彻底删除门店数据文件`,tag:'del',group:gid});
+  stages.push({kind:'file',path:'data/stores.json',beforeObj:manifestBefore,afterObj:manifestAfter,desc:`门店清单：删除 ${name}`,tag:'del',group:gid});
+  syncStoreKeys(); fillSelects(); renderStores(); renderStage();
+  toast('删除已加入待发布，推送后生效；撤销可整组还原',2600);
 }
 function autoStoreKey(){
   let n=1;
