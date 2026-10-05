@@ -1,0 +1,6 @@
+[
+  { "key": "acme", "name": "ACME", "sub": "Meet me at Acme" },
+  { "key": "phroom", "name": "PH ROOM", "sub": "PH ROOM" },
+  { "key": "eros", "name": "EROS LIVE SHOW", "sub": "Fall in Love. Fall into Play." },
+  { "key": "sensory", "name": "SENSORY GARDEN", "sub": "森三里" }
+]
