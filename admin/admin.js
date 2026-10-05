@@ -194,7 +194,8 @@ function fillSelects(){
 }
 function fillCatSelect(sel,sk,kind){
   const list=kind==='pdf'?catListPdf(sk):catList(sk);
-  sel.innerHTML='<option value="__all">全部分类</option>'+list.map(r=>`<option value="${r.key}">${r.label}</option>`).join('');
+  const allLabel=kind==='pdf'?'整单自动识别分类（推荐，整本PDF一次入）':'全部分类';
+  sel.innerHTML='<option value="__all">'+allLabel+'</option>'+list.map(r=>`<option value="${r.key}">${r.label}</option>`).join('');
 }
 function currentRefs(){
   const sk=$('#ed-store').value;
@@ -475,10 +476,108 @@ function preprocessForOcr(src){
   ctx.putImageData(img,0,0);
   return c;
 }
+// ---------- 整单自动识别分类 ----------
+function runReconcileWhole(sk,lines){
+  const sections=PDFR.parsePdfSections(lines);
+  const box=$('#pdf-result');
+  const model=[]; const skipped=[];
+  let total=0,chg=0,rev=0,add=0,miss=0,newCats=0;
+  sections.forEach(sec=>{
+    const catName=sec.catName||'未分类';
+    if(PDFR.isSystemCat(catName)){ skipped.push(catName); return; }
+    const existId=matchCategory(sk,catName);
+    const ref=existId?findRef(sk,existId):null;
+    const items=ref?collectItems(getCatHtml(sk,ref)).map(it=>({
+      ...it, zhStripped:E.zhStripped(it.zhName), en:E.enCore(it.enRaw||it.zhName)
+    })):[];
+    const r=PDFR.reconcile(sec.entries,items,existId||'newcat');
+    const isNew=!ref;
+    if(isNew) newCats++;
+    total+=sec.entries.length; chg+=r.changes.length; rev+=r.review.length; add+=r.adds.length; miss+=r.missing.length;
+    model.push({catName,isNew,refKey:existId,r});
+  });
+  window.__pdfR={sk,mode:'whole',model};
+  const row=(si,type,title,body,checked)=>`<label class="rc-row ${type}"><input type="checkbox" data-sec="${si}" data-type="${type}" ${checked?'checked':''} style="margin-top:3px"><span>${title}${body}</span></label>`;
+  const bucket=(si,cls,title,arr,body,checked)=>!arr.length?'':`<div class="rc-bucket"><h3>${title}<span class="cnt">${arr.length}</span></h3>`+
+    arr.map((c,i)=>row(si,cls,title,body(c,i),checked)).join('')+'</div>';
+  let html=`<div class="pdf-hint">整单识别 ${sections.length} 个分类、${total} 个品名：自动改价 ${chg}、待确认 ${rev}、新增 ${add}、待下架提示 ${miss}；其中 <b>${newCats}</b> 个新分类将自动创建。逐条勾选后点底部「采纳」。</div>`;
+  if(skipped.length) html+=`<div class="pdf-hint">已按规则跳过系统分类：${skipped.map(esc).join('、')}（不入菜单）。</div>`;
+  model.forEach((sec,si)=>{
+    const r=sec.r;
+    html+=`<div class="rc-section"><div class="rc-sec-head">分类：<b>${esc(sec.catName)}</b>${sec.isNew?' <span class="rc-newtag">新分类（采纳时自动创建）</span>':' <span class="rc-oldtag">已有分类</span>'}<span class="pdf-hint" style="margin-left:8px">识别 ${r.changes.length+r.review.length+r.adds.length+r.missing.length} 项</span></div>`;
+    html+=bucket(si,'change','改价（默认采纳）',r.changes,c=>`
+      <div><b>${esc(c.item.zhName)}</b></div>
+      <div class="names">PDF：${esc(c.entry.zh)} ${esc(c.entry.en||'')}${c.inherited?'（分组继承价）':''}</div>
+      <div class="prices"><span class="old-p">${esc(c.item.priceText||'无价')}</span> → <span class="new-p">${esc(c.newPrice)}</span></div>`,true);
+    html+=bucket(si,'review','疑似同款（请人工核对，默认不采纳）',r.review,c=>`
+      <div><b>${esc(c.item.zhName)}</b> ${esc(c.item.enRaw||'')}</div>
+      <div class="names">PDF：${esc(c.entry.zh)} ${esc(c.entry.en||'')}（${esc(c.reason)} ${c.score}分）</div>
+      <div class="prices"><span class="old-p">${esc(c.item.priceText||'无价')}</span> → <span class="new-p">${esc(c.newPrice)}</span></div>`,false);
+    html+=bucket(si,'add','新增单品（新店/新分类建议全选）',r.adds,a=>`
+      <div><b>${esc(a.entry.zh)}</b> ${esc(a.entry.en||'')}</div>
+      <div class="prices"><span class="new-p">${esc(a.newPrice)}</span></div>`,sec.isNew);
+    if(!sec.isNew && r.missing.length){
+      html+='<div class="rc-bucket"><h3>待下架？<span class="cnt">'+r.missing.length+'</span></h3>';
+      html+=r.missing.map(m=>`<div class="rc-row miss"><div><b>${esc(m.item.zhName)}</b></div><div class="names">PDF 中未出现，如已下架请去「搜索改价」手动删除</div></div>`).join('');
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  if(!model.length) html+='<div class="empty-tip">没有识别到任何分类和品名。扫描件请确认 OCR 已跑完，或改用「粘贴菜单文字」。</div>';
+  html+=`<div class="rc-actions"><button class="btn primary" id="btn-rc-adopt">采纳勾选项到待发布</button><button class="btn" id="btn-rc-clear">清空结果</button></div>`;
+  box.innerHTML=html;
+  $('#btn-rc-clear').onclick=()=>{box.innerHTML='';};
+  $('#btn-rc-adopt').onclick=adoptReconcileWhole;
+}
+function pdfAddItemHtml(entry,newPrice){
+  return `<div class="item"><div class="name">${esc(entry.zh)}${entry.en?` <span class="en-name">${esc(entry.en)}</span>`:''}</div><div class="price">${esc(newPrice)}</div></div>`;
+}
+function adoptReconcileWhole(){
+  const {sk,model}=window.__pdfR;
+  let adopted=0; const ensured=new Set();
+  model.forEach((sec,si)=>{
+    let ref=null;
+    const ensure=()=>{ if(!ref){ ref=ensureCategoryForPdf(sk,sec.catName); ensured.add(si); } return ref; };
+    // 按类型 + 行序精确取值：复选框在各自 bucket 中顺序与数组一致
+    ['change','review','add'].forEach(type=>{
+      const arr=type==='change'?sec.r.changes:type==='review'?sec.r.review:sec.r.adds;
+      const boxes=[...document.querySelectorAll(`#pdf-result input[data-sec="${si}"][data-type="${type}"]`)];
+      boxes.forEach((b,bi)=>{
+        if(!b.checked) return;
+        const c=arr[bi]; if(!c) return;
+        if(type==='add'){
+          const r=ensure();
+          const item=pdfAddItemHtml(c.entry,c.newPrice);
+          if(applyMutation(sk,r,`${r.label}：PDF 新增 ${c.entry.zh}`,'add',html=>{const pos=lastCardInsertPos(html);return html.slice(0,pos)+item+html.slice(pos);})) adopted++;
+        }else{
+          const r=sec.refKey?findRef(sk,sec.refKey):ensure();
+          if(!r) return;
+          const target=c.item;
+          const cur=collectItems(getCatHtml(sk,r));
+          const n=cur.findIndex(x=>x.zhName===target.zhName && x.priceText===target.priceText);
+          const useIdx=n<0?cur.findIndex(x=>x.zhName===target.zhName):n;
+          if(useIdx<0) return;
+          const ok=applyMutation(sk,r,`${r.label}：${target.zhName} 按 PDF 改价 ${target.priceText||'无价'} → ${c.newPrice}`,'change',html=>{
+            const span=itemSpan(html,useIdx); if(!span) return html;
+            let item=html.slice(span[0],span[1]);
+            item=item.replace(/(<div\b[^>]*class="[^"]*\bprice\b[^"]*"[^>]*>)[\s\S]*?(<\/div>)/,`$1${esc(c.newPrice)}$2`);
+            return html.slice(0,span[0])+item+html.slice(span[1]);
+          });
+          if(ok) adopted++;
+        }
+      });
+    });
+  });
+  fillSelects(); renderStores(); renderStage();
+  toast(`已采纳 ${adopted} 项到待发布${ensured.size?`，新建 ${ensured.size} 个分类`:''}`,2600);
+  document.querySelector('[data-panel=stage]').click();
+}
+
 function runReconcile(lines){
   const sk=$('#pdf-store').value;
   const catv=$('#pdf-cat').value;
-  const ref=catv==='__all'?null:findRef(sk,catv);
+  if(catv==='__all'){ runReconcileWhole(sk,lines); return; }
+  const ref=findRef(sk,catv);
   if(!ref){ toast('请先选择要对账的具体分类'); return; }
   const entries=PDFR.parsePdfEntries(lines);
   const items=collectItems(getCatHtml(sk,ref)).map(it=>({
@@ -791,6 +890,27 @@ function addCategory(sk,name){
   DATA.stores[sk]=after;
   fillSelects(); renderStores(); renderStage();
   toast('分类已加入待发布');
+}
+// PDF 整单识别：按名称匹配已有分类（归一化精确 → 包含），找不到返回 null
+function normCatName(s){ return (s||'').replace(/[\s类区板块（）()]/g,''); }
+function matchCategory(sk,catName){
+  const d=DATA.stores[sk]; const n=normCatName(catName);
+  let c=d.categories.find(x=>normCatName(x.name)===n);
+  if(!c) c=d.categories.find(x=>{ const m=normCatName(x.name); return m&&n.length>=2&&(m.includes(n)||n.includes(m)); });
+  return c?c.id:null;
+}
+// PDF 采纳时确保分类存在；新分类整体暂存（可一次撤销）
+function ensureCategoryForPdf(sk,catName){
+  const id=matchCategory(sk,catName);
+  if(id) return findRef(sk,id);
+  const d=DATA.stores[sk];
+  const before=JSON.parse(JSON.stringify(d));
+  const cid=uniqueCatId(d);
+  d.categories.push({id:cid,name:catName}); d.content[cid]='';
+  const after=JSON.parse(JSON.stringify(d));
+  stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:before,afterObj:after,desc:`${d.name}：PDF 自动新建分类「${catName}」`,tag:'add'});
+  DATA.stores[sk]=after;
+  return findRef(sk,cid);
 }
 $('#btn-ns-add').onclick=()=>{
   const name=$('#ns-name').value.trim();
