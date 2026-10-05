@@ -18,5 +18,10 @@
     "key": "sensory",
     "name": "SENSORY GARDEN",
     "sub": "森三里"
+  },
+  {
+    "key": "store1",
+    "name": "LUST",
+    "sub": "super lounge"
   }
 ]
