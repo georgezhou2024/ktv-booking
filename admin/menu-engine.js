@@ -179,11 +179,13 @@ function extractFromHtml(html, storeKey, catId, catName, out, doc){
 }
 
 // 直接构建可比价 cell 列表（浏览器 DOMParser / linkedom 均可）
-export function buildCells(stores, dom, shisha){
+// storeKeys 可选：动态门店清单；不传则按 stores 对象全部键
+export function buildCells(stores, dom, shisha, storeKeys){
   const cellList = [];
   const skipped = {addon:[], empty:[]};
   const raw = [];
-  STORE_KEYS.forEach(sk=>{
+  const keys = storeKeys && storeKeys.length ? storeKeys : Object.keys(stores);
+  keys.forEach(sk=>{
     const d = stores[sk];
     if(!d) return;
     d.categories.forEach(cat=>{
