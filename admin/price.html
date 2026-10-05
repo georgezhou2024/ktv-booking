@@ -171,7 +171,17 @@ $('#gate-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 
 async function boot(){
   try{
-    const manifest=await (await fetch('../data/stores.json?t='+Date.now())).json();
+    // 版本号缓存：仅 version.txt 每次校验，数据文件按版本强缓存，弱网秒开
+    let ver=localStorage.getItem('ph_menu_ver')||'';
+    try{
+      const vr=await fetch('../data/version.txt?x='+Date.now(),{cache:'no-store'});
+      if(vr.ok){const v=(await vr.text()).trim(); if(v){ver=v; localStorage.setItem('ph_menu_ver',v);}}
+    }catch(e){}
+    const vj=async path=>{
+      if(ver){ try{return await (await fetch(path+'?v='+ver)).json();}catch(e){} }
+      return await (await fetch(path)).json();
+    };
+    const manifest=await vj('../data/stores.json');
     STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.filter(m=>!m.hidden).map(m=>m.key));
     const CN_NUM=['一','二','三','四','五','六','七','八','九','十'];
     const cnN=n=>n>=1&&n<=10?CN_NUM[n-1]:String(n);
@@ -180,8 +190,8 @@ async function boot(){
     document.title=title+' · PH GROUP（内部）';
     window.__cnN=cnN;
     const stores={};
-    await Promise.all(STORE_KEYS.map(async k=>{stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json();}));
-    const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
+    await Promise.all(STORE_KEYS.map(async k=>{stores[k]=await vj('../data/'+k+'.json');}));
+    const shisha=await vj('../data/shisha.json');
     const storeNames=Object.fromEntries(Object.entries(stores).map(([k,v])=>[k,v.name]));
     const dom={parse:h=>new DOMParser().parseFromString(h,'text/html')};
     const cells=E.buildCells(stores,dom,shisha,STORE_KEYS);
