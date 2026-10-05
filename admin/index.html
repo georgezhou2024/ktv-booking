@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PH GROUP 菜单管理后台</title>
+<style>
+:root{--bg:#14110f;--panel:#1c1714;--card:#221c18;--line:#332b25;--gold:#c9a96e;--gold2:#a8864d;--txt:#e8ddcc;--mut:#8d8175;--red:#b3242a;--green:#2e7d4f;--amber:#b07a2c;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:14px;padding-bottom:90px;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+/* 登录门 */
+#gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 30%,#241d18,#0e0b09);display:flex;align-items:center;justify-content:center;padding:20px;}
+.gate-box{width:380px;max-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:30px 28px;}
+.gate-logo{text-align:center;font-size:24px;letter-spacing:6px;color:var(--gold);font-weight:700;}
+.gate-sub{text-align:center;color:var(--mut);font-size:12px;letter-spacing:4px;margin:8px 0 24px;}
+.fld{margin-bottom:14px;}
+.fld label{display:block;font-size:12px;color:var(--mut);margin-bottom:6px;}
+.fld input,.fld select{width:100%;background:#171310;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:11px 12px;font-size:14px;outline:none;}
+.fld input:focus{border-color:var(--gold);}
+#g-btn{width:100%;background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;border:0;border-radius:8px;padding:12px;font-size:15px;font-weight:700;letter-spacing:4px;margin-top:6px;}
+#g-err{color:#e08a8d;font-size:12px;text-align:center;margin-top:10px;min-height:16px;}
+/* 顶栏 */
+#topbar{position:sticky;top:0;z-index:50;background:rgba(20,17,15,.96);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:12px;}
+#topbar .tt{font-size:17px;font-weight:700;color:var(--gold);letter-spacing:2px;}
+#conn{font-size:11px;color:var(--mut);flex:1;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+#conn .dot{width:7px;height:7px;border-radius:50%;background:#666;flex:none;}
+#conn.ok .dot{background:#4caf7a;}
+#btn-logout{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:7px;padding:6px 12px;font-size:12px;}
+/* 导航 */
+#nav{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;background:var(--bg);position:sticky;top:49px;z-index:40;border-bottom:1px solid var(--line);}
+#nav button{flex:none;background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:9px 16px;font-size:13px;white-space:nowrap;}
+#nav button.on{background:var(--gold);color:#17120c;border-color:var(--gold);font-weight:700;}
+#nav .badge{display:inline-block;min-width:17px;height:17px;line-height:17px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;margin-left:5px;padding:0 4px;}
+main{max-width:900px;margin:0 auto;padding:14px;}
+.panel{display:none;}.panel.on{display:block;}
+/* 工具行 */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.toolbar select,.toolbar input[type=text],.toolbar input[type=search]{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:10px 12px;font-size:13px;outline:none;}
+.toolbar input{flex:1;min-width:160px;}
+.btn{background:var(--card);border:1px solid var(--gold2);color:var(--gold);border-radius:9px;padding:10px 16px;font-size:13px;}
+.btn.primary{background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;border:0;font-weight:700;}
+.btn.danger{border-color:var(--red);color:#e08a8d;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+/* 单品卡片 */
+.item-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px;}
+.ic-name{font-size:14px;font-weight:600;line-height:1.4;}
+.ic-en{display:block;font-size:11px;color:var(--mut);font-weight:400;margin-top:2px;}
+.ic-sub{font-size:11px;color:var(--gold2);margin-top:3px;line-height:1.5;}
+.ic-price{color:#7fc99a;font-weight:700;margin-top:7px;font-size:13px;}
+.ic-actions{margin-top:9px;display:flex;gap:8px;}
+.ic-actions button{background:transparent;border:1px solid var(--gold2);color:var(--gold);border-radius:7px;padding:5px 14px;font-size:12px;}
+.ic-actions button.del{border-color:var(--red);color:#e08a8d;}
+.edit-form{margin-top:8px;display:none;flex-direction:column;gap:8px;}
+.edit-form.on{display:flex;}
+.edit-form input,.edit-form textarea{width:100%;background:#171310;border:1px solid var(--line);border-radius:7px;color:var(--txt);padding:9px 10px;font-size:13px;outline:none;resize:vertical;}
+.edit-form .ef-actions{display:flex;gap:8px;}
+.edit-form .ef-actions button{flex:1;border-radius:7px;padding:9px;font-size:13px;border:1px solid var(--line);}
+.ef-save{background:var(--gold);color:#17120c;border:0;font-weight:700;}
+.ef-cancel{background:transparent;color:var(--mut);}
+.empty-tip{color:var(--mut);text-align:center;padding:50px 0;font-size:13px;}
+/* PDF */
+.pdf-storerow{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.pdf-storerow select{flex:1;min-width:130px;background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:10px;font-size:13px;}
+#pdf-drop{border:1.5px dashed var(--gold2);border-radius:14px;padding:38px 18px;text-align:center;color:var(--mut);background:rgba(201,169,110,.04);cursor:pointer;}
+#pdf-drop.over{background:rgba(201,169,110,.12);border-color:var(--gold);}
+#pdf-drop .big{font-size:15px;color:var(--gold);margin-bottom:7px;font-weight:600;}
+.pdf-hint{font-size:11.5px;color:var(--mut);line-height:1.7;margin:10px 2px;}
+details.paste{margin:10px 0;}
+details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding:6px 2px;}
+#pdf-text{width:100%;margin-top:8px;background:#171310;border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:10px;font-size:12.5px;min-height:130px;outline:none;}
+.rc-bucket{margin:16px 0;}
+.rc-bucket h3{font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.rc-bucket h3 .cnt{font-size:11px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1px 9px;color:var(--mut);font-weight:400;}
+.rc-row{background:var(--card);border:1px solid var(--line);border-left-width:3px;border-radius:9px;padding:10px 12px;margin-bottom:7px;font-size:12.5px;line-height:1.6;}
+.rc-row.change{border-left-color:#d8a83a;}
+.rc-row.review{border-left-color:#d8a83a;background:#2a2316;}
+.rc-row.add{border-left-color:#4caf7a;}
+.rc-row.miss{border-left-color:var(--red);opacity:.85;}
+.rc-row .names{color:var(--mut);font-size:11.5px;}
+.rc-row .prices{margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.old-p{color:#e08a8d;text-decoration:line-through;}
+.new-p{color:#7fc99a;font-weight:700;}
+.rc-row label{display:flex;gap:8px;align-items:flex-start;cursor:pointer;}
+.rc-actions{margin-top:12px;display:flex;gap:10px;}
+/* 暂存/历史 */
+.stage-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:center;font-size:12.5px;}
+.stage-item .st-tag{font-size:10.5px;border-radius:6px;padding:2px 8px;flex:none;}
+.st-tag.change{background:rgba(216,168,58,.18);color:#e0bd7a;}
+.st-tag.add{background:rgba(76,175,122,.18);color:#8fdcb0;}
+.st-tag.del{background:rgba(179,36,42,.2);color:#e08a8d;}
+.st-tag.rollback{background:rgba(120,140,200,.2);color:#aab8e0;}
+.stage-item .st-body{flex:1;min-width:0;}
+.stage-item .st-undo{background:none;border:1px solid var(--line);color:var(--mut);border-radius:6px;font-size:11px;padding:4px 10px;flex:none;}
+.warn-box{background:rgba(216,168,58,.09);border:1px solid rgba(216,168,58,.4);color:#e3c98f;border-radius:10px;padding:11px 14px;font-size:12.5px;line-height:1.8;margin:10px 0;}
+.warn-box.err{background:rgba(179,36,42,.1);border-color:rgba(179,36,42,.5);color:#ef9a9d;}
+.ok-box{background:rgba(46,125,79,.12);border:1px solid rgba(76,175,122,.4);color:#8fdcb0;border-radius:10px;padding:11px 14px;font-size:12.5px;margin:10px 0;}
+.hist-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;font-size:12.5px;display:flex;gap:10px;align-items:center;}
+.hist-item .hi-meta{color:var(--mut);font-size:11px;margin-top:3px;}
+.hist-item button{margin-left:auto;background:none;border:1px solid var(--gold2);color:var(--gold);border-radius:7px;padding:5px 12px;font-size:12px;flex:none;}
+.about p{color:var(--mut);font-size:13px;line-height:2;margin:10px 0;}
+.about h3{color:var(--gold);font-size:14px;margin:18px 0 6px;}
+.about code{background:var(--card);padding:2px 7px;border-radius:5px;color:var(--gold);}
+.about a{color:var(--gold);}
+/* 底部推送栏 */
+#push-bar{position:fixed;left:0;right:0;bottom:0;background:#171310;border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;z-index:60;}
+#push-info{flex:1;font-size:12.5px;color:var(--mut);min-width:0;}
+#push-info b{color:var(--gold);}
+#btn-push{background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;border:0;border-radius:9px;padding:11px 22px;font-size:14px;font-weight:700;white-space:nowrap;}
+#btn-push:disabled{opacity:.4;}
+#btn-discard{background:transparent;border:1px solid var(--red);color:#e08a8d;border-radius:9px;padding:10px 14px;font-size:12.5px;}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#000d;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:.25s;pointer-events:none;max-width:90%;text-align:center;}
+#toast.show{opacity:1;}
+@media(max-width:640px){
+  #topbar .tt{font-size:15px;letter-spacing:1px;}
+  #conn{font-size:10px;}
+  .toolbar select{flex:1;}
+  .gate-box{padding:24px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 登录门 -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">PH GROUP</div>
+    <div class="gate-sub">菜 单 管 理 后 台</div>
+    <div class="fld"><label>管理密码</label><input id="g-pwd" type="password" placeholder="进入后台的密码" autocomplete="off"></div>
+    <div class="fld"><label>GitHub 令牌（PAT，仅推送时必需，可只填密码先查看）</label><input id="g-pat" type="password" placeholder="github_pat_..." autocomplete="off" style="letter-spacing:1px"></div>
+    <details style="margin-bottom:10px"><summary style="font-size:11px;color:var(--mut);cursor:pointer">仓库设置（默认已填，一般不用改）</summary>
+      <div class="fld" style="margin-top:10px"><label>Owner</label><input id="g-owner" value="georgezhou2024"></div>
+      <div class="fld"><label>Repo</label><input id="g-repo" value="ktv-booking"></div>
+      <div class="fld"><label>Branch</label><input id="g-branch" value="main"></div>
+    </details>
+    <button id="g-btn">进 入</button>
+    <div id="g-err"></div>
+  </div>
+</div>
+
+<!-- 顶栏 -->
+<div id="topbar" style="display:none">
+  <div class="tt">菜单管理后台</div>
+  <div id="conn"><span class="dot"></span><span id="conn-txt">连接中…</span></div>
+  <button id="btn-logout">退出</button>
+</div>
+
+<!-- 导航 -->
+<nav id="nav" style="display:none">
+  <button data-panel="edit" class="on">搜索改价</button>
+  <button data-panel="pdf">PDF 对账</button>
+  <button data-panel="stage">待发布<span class="badge" id="stage-badge" style="display:none">0</span></button>
+  <button data-panel="history">历史回滚</button>
+  <button data-panel="about">比价页说明</button>
+</nav>
+
+<main id="app" style="display:none">
+  <!-- 搜索改价 -->
+  <section class="panel on" id="panel-edit">
+    <div class="toolbar">
+      <select id="ed-store"></select>
+      <select id="ed-cat"></select>
+      <input type="search" id="ed-q" placeholder="搜索中文 / 英文品名…">
+      <button class="btn primary" id="btn-add">+ 新增单品</button>
+    </div>
+    <div id="ed-list"></div>
+  </section>
+
+  <!-- PDF 对账 -->
+  <section class="panel" id="panel-pdf">
+    <div class="pdf-storerow">
+      <select id="pdf-store"></select>
+      <select id="pdf-cat"></select>
+    </div>
+    <div id="pdf-drop">
+      <div class="big">点击选择 / 拖拽 PDF 到这里</div>
+      <div>自动识别品名与价格，按分组价继承规则补全无价行</div>
+      <div class="pdf-hint">识别结果逐条确认后才会进入暂存，不会自动改单。<br>扫描件/图片 PDF 会自动 OCR（中英文，首次加载稍慢）。</div>
+      <input type="file" id="pdf-file" accept="application/pdf,image/*" style="display:none">
+    </div>
+    <details class="paste"><summary>没有 PDF？直接粘贴菜单文字 / 微信识别文字（点此展开）</summary>
+      <textarea id="pdf-text" placeholder="把菜单文字整段粘贴进来，格式例如：&#10;仙女湾长相思 FAIRY BAY SAUVIGNON BLANC&#10;¥800 /1瓶 - ¥2000 /3瓶&#10;天鹅堡雷司令 SWAN CASTLE RIESLING（无价行自动继承上一价格）"></textarea>
+      <div style="text-align:right;margin-top:8px"><button class="btn primary" id="btn-pdf-text">开始识别</button></div>
+    </details>
+    <div id="pdf-result"></div>
+  </section>
+
+  <!-- 待发布 -->
+  <section class="panel" id="panel-stage">
+    <div id="stage-warns"></div>
+    <div id="stage-list"></div>
+    <div class="rc-actions">
+      <button class="btn danger" id="btn-discard" style="display:none">全部放弃，还原菜单</button>
+    </div>
+  </section>
+
+  <!-- 历史回滚 -->
+  <section class="panel" id="panel-history">
+    <div class="pdf-hint">回滚不会直接上线：选中的历史版本会先进「待发布」，你核对后再点底部「一键推送」。</div>
+    <div id="history-list"><div class="empty-tip">加载中…</div></div>
+  </section>
+
+  <!-- 说明 -->
+  <section class="panel about" id="panel-about">
+    <h3>线上比价页</h3>
+    <p>地址（不公开，搜索引擎不收录）：<br><code>/admin/price.html</code>，密码同为 <code>ph666</code>。</p>
+    <p>每次菜单推送上线后，比价页自动读取最新数据，无需手动刷新；支持同款四店比价、最低价绿色/最高价红色、中英文搜索、导出 Excel 给领导。</p>
+    <h3>日常改单流程</h3>
+    <p>1.「搜索改价」里找到单品改价/改名，或「PDF 对账」上传新菜单逐条采纳；<br>
+       2. 改动都先进「待发布」，可逐条撤销或全部放弃；<br>
+       3. 核对无误后点底部「一键推送」，约 1 分钟自动上线。</p>
+    <h3>令牌（PAT）</h3>
+    <p>只读查看不需要令牌；推送必须填 Fine-grained PAT（仅 ktv-booking 仓库、Contents 读写权限）。令牌只保存在你本机浏览器，不上传任何第三方。</p>
+    <h3>首次部署 / 修复程序文件</h3>
+    <p>后台页面本身（admin 四个文件）和菜单首页不随日常改单推送。首次上线、或后台程序更新后，点下面按钮同步一次（需要令牌）：</p>
+    <p><button class="btn primary" id="btn-deploy">同步后台程序文件到线上</button></p>
+    <p id="deploy-log" class="pdf-hint"></p>
+  </section>
+</main>
+
+<!-- 底部推送栏 -->
+<div id="push-bar" style="display:none">
+  <button id="btn-discard-m">放弃</button>
+  <div id="push-info">暂无改动</div>
+  <button id="btn-push" disabled>一 键 推 送</button>
+</div>
+<div id="toast"></div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
