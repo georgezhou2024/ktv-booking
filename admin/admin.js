@@ -708,11 +708,23 @@ function renderStores(){
   const box=$('#store-list'); if(!box||!DATA) return;
   box.innerHTML=STORE_KEYS.map(sk=>{
     const d=DATA.stores[sk]; if(!d) return '';
+    const m=DATA.storesList.find(x=>x.key===sk)||{sub:''};
     const cats=d.categories.map(c=>`<span class="cat-chip">${esc(c.name)}</span>`).join('')||'<span class="pdf-hint">暂无分类</span>';
-    return `<div class="store-row">
+    return `<div class="store-row" data-row="${sk}">
       <div class="sr-head">
-        <div><div class="sr-name">${esc(d.name)} <span class="sr-meta">(${esc(sk)})</span></div>
+        <div><div class="sr-name">${esc(d.name)} <span class="sr-meta">(${esc(sk)}，键名不可改)</span></div>
         <div class="sr-meta">${d.categories.length} 个分类 · ${countItems(d)} 个单品${sk==='phroom'?' · 含水烟板块':''}</div></div>
+        <button class="btn" data-edit="${sk}">编辑名称</button>
+      </div>
+      <div class="sr-editbox" data-editbox="${sk}" style="display:none;margin-top:10px">
+        <div class="grid-form">
+          <div class="fld" style="margin:0"><label>显示名称</label><input data-en="${sk}" value="${esc(d.name)}"></div>
+          <div class="fld" style="margin:0"><label>副标题</label><input data-es="${sk}" value="${esc(m.sub||d.subtitle||'')}"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button class="btn" data-ecancel="${sk}">取消</button>
+          <button class="btn primary" data-esave="${sk}">保存修改（进待发布）</button>
+        </div>
       </div>
       <div style="margin-top:8px">${cats}</div>
       <div class="sr-addcat"><input placeholder="给该门店新增分类名称，如：清酒" data-catkey="${sk}"><button class="btn" data-addcat="${sk}">+ 添加分类</button></div>
@@ -725,6 +737,41 @@ function renderStores(){
     if(!name){ toast('请输入分类名称'); return; }
     addCategory(sk,name); inp.value='';
   });
+  $$('#store-list [data-edit]').forEach(b=>b.onclick=()=>{
+    box.querySelector(`[data-editbox="${b.dataset.edit}"]`).style.display='block';
+  });
+  $$('#store-list [data-ecancel]').forEach(b=>b.onclick=()=>{
+    box.querySelector(`[data-editbox="${b.dataset.ecancel}"]`).style.display='none';
+  });
+  $$('#store-list [data-esave]').forEach(b=>b.onclick=()=>{
+    const sk=b.dataset.esave;
+    const name=box.querySelector(`[data-en="${sk}"]`).value.trim();
+    const sub=box.querySelector(`[data-es="${sk}"]`).value.trim();
+    if(!name){ toast('显示名称不能为空'); return; }
+    editStore(sk,name,sub);
+  });
+}
+function autoStoreKey(){
+  let n=1;
+  STORE_KEYS.forEach(k=>{ const mm=k.match(/^store(\d+)$/); if(mm) n=Math.max(n,+mm[1]+1); });
+  let key='store'+n;
+  while(STORE_KEYS.includes(key)){ n++; key='store'+n; }
+  return key;
+}
+function editStore(sk,name,sub){
+  const d=DATA.stores[sk];
+  const fileBefore=JSON.parse(JSON.stringify(d));
+  const manifestBefore=JSON.parse(JSON.stringify(DATA.storesList));
+  d.name=name; d.subtitle=sub||name; d.footer='— '+(sub||name)+' —';
+  const m=DATA.storesList.find(x=>x.key===sk);
+  if(m){ m.name=name; m.sub=sub||''; }
+  const fileAfter=JSON.parse(JSON.stringify(d));
+  const manifestAfter=JSON.parse(JSON.stringify(DATA.storesList));
+  const gid='es-'+sk+'-'+Date.now();
+  stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:fileBefore,afterObj:fileAfter,desc:`${name}：修改门店名称/副标题`,tag:'change',group:gid});
+  stages.push({kind:'file',path:'data/stores.json',beforeObj:manifestBefore,afterObj:manifestAfter,desc:`门店清单：更新 ${name}`,tag:'change',group:gid});
+  fillSelects(); renderStores(); renderStage();
+  toast('名称修改已加入待发布');
 }
 function uniqueCatId(d){
   const ids=new Set(d.categories.map(c=>c.id));
@@ -745,13 +792,14 @@ function addCategory(sk,name){
   toast('分类已加入待发布');
 }
 $('#btn-ns-add').onclick=()=>{
-  const key=$('#ns-key').value.trim().toLowerCase();
   const name=$('#ns-name').value.trim();
   const sub=$('#ns-sub').value.trim();
   const catName=$('#ns-cat').value.trim();
-  if(!/^[a-z0-9]{2,12}$/.test(key)){ toast('门店键需为 2-12 位英文小写/数字'); return; }
-  if(STORE_KEYS.includes(key)){ toast('该门店键已存在'); return; }
   if(!name){ toast('请填写显示名称'); return; }
+  // 门店键：留空自动生成；填了就自动转合法（小写、只留英文数字）
+  let key=$('#ns-key').value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
+  if(!key) key=autoStoreKey();
+  if(STORE_KEYS.includes(key)){ toast('门店键「'+key+'」已存在，请换一个或留空自动生成'); return; }
   const data={name,subtitle:sub||name,footer:'— '+(sub||name)+' —',theme:'',categories:[],content:{}};
   if(catName){ data.categories.push({id:'cat1',name:catName}); data.content['cat1']=''; }
   const manifestBefore=JSON.parse(JSON.stringify(DATA.storesList));
