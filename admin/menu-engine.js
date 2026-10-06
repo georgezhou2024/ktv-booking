@@ -229,23 +229,23 @@ function makeDoc(dom, html){
 export function clusterCells(cellList){
   const clusters = [];
   const clusterMap = new Map();
-  const normCat = catId => {
-    const c = (catId||'').toLowerCase();
-    if(/white/.test(c)) return 'whitewine';
-    if(/red/.test(c)) return 'redwine';
-    if(/champagne/.test(c)) return 'champagne';
-    if(/whisk/.test(c)) return 'whisky';
-    if(/tequila/.test(c)) return 'tequila';
-    if(/cognac|brandy/.test(c)) return 'cognac';
-    if(/vodka|gin/.test(c)) return 'spirit';
-    if(/beer/.test(c)) return 'beer';
-    if(/soft|drink|juice|water/.test(c)) return 'softdrink';
-    if(/cocktail/.test(c)) return 'cocktail';
-    if(/cigar/.test(c)) return 'cigar';
-    return c;
+  const normCat = c => {
+    const s = ((c.catId||'')+' '+(c.catName||'')).toLowerCase();
+    if(/白葡|白葡萄酒|white|blanc/.test(s)) return 'whitewine';
+    if(/红葡|红葡萄酒|red|rouge|vin rouge/.test(s)) return 'redwine';
+    if(/champagne|香槟/.test(s)) return 'champagne';
+    if(/whisk|威士忌/.test(s)) return 'whisky';
+    if(/tequila|龙舌兰|mezcal|mescal/.test(s)) return 'tequila';
+    if(/cognac|brandy|干邑|白兰地/.test(s)) return 'cognac';
+    if(/vodka|gin|伏特加|金酒/.test(s)) return 'spirit';
+    if(/beer|啤酒/.test(s)) return 'beer';
+    if(/soft|drink|juice|water|软饮|饮料|果汁|椰子水|苏打|汤力/.test(s)) return 'softdrink';
+    if(/cocktail|鸡尾|特调/.test(s)) return 'cocktail';
+    if(/cigar|雪茄/.test(s)) return 'cigar';
+    return c.catId;
   };
   cellList.forEach(c=>{
-    c.normCat = normCat(c.catId);
+    c.normCat = normCat(c);
     const useZh = cjkLen(c.zp)>=2;
     c.useZh = useZh;
     c.key = (useZh ? 'ZH:'+c.zp : c.en) + '||' + c.normCat + '||' + c.spec;
