@@ -174,7 +174,7 @@
             gap: 14px;
             flex-wrap: wrap;
         }
-        .item:last-child {
+    .item:last-child {
             border-bottom: none;
         }
         .name {
@@ -192,6 +192,12 @@
             color: #992c22;
             white-space: nowrap;
             font-size: 15px;
+        }
+        .flag {
+            display: inline-block;
+            margin-right: 7px;
+            font-size: 15px;
+            line-height: 1;
         }
         .menu-grid {
             display: grid;
@@ -502,6 +508,46 @@ document.addEventListener('error', function(e){
 // ========== 门店酒水单数据 ==========
 let STORE_DATA = {};
 let STORE_LIST = []; // 门店清单（data/stores.json，由 /admin 后台维护，新增门店自动出现）
+let FLAGS_SETTINGS = {hideAll:false,overrides:{}};
+// 国旗自动识别：按中文名括注（法国）/英文产区
+const FLAG_RULES = [
+  [/法国|勃艮第|波尔多|香槟|干邑|卢瓦尔|隆河|普罗旺斯/, '🇫🇷'],
+  [/智利/, '🇨🇱'], [/新西兰|马尔堡/, '🇳🇿'],
+  [/意大利|托斯卡纳|皮埃蒙特|威尼托/, '🇮🇹'], [/西班牙|里奥哈/, '🇪🇸'],
+  [/澳大利亚|澳洲|玛格丽特河/, '🇦🇺'], [/美国|纳帕|加州/, '🇺🇸'],
+  [/德国|莱茵/, '🇩🇪'], [/英国|苏格兰|英格兰|斯佩塞/, '🇬🇧'],
+  [/日本/, '🇯🇵'], [/墨西哥/, '🇲🇽'], [/加拿大/, '🇨🇦'],
+  [/阿根廷|门多萨/, '🇦🇷'], [/南非/, '🇿🇦'], [/葡萄牙/, '🇵🇹'], [/爱尔兰/, '🇮🇪'],
+  [/中国|宁夏|山东|蓬莱/, '🇨🇳']
+];
+function autoFlag(zh, en){
+  const t=(zh||'')+' '+(en||'');
+  for(const [re,fg] of FLAG_RULES) if(re.test(t)) return fg;
+  if(/Chablis|Bordeaux|Burgundy|Rhone|Champagne|Cognac|Provence/i.test(en||'')) return '🇫🇷';
+  if(/Marlborough/i.test(en||'')) return '🇳🇿';
+  if(/Napa|California/i.test(en||'')) return '🇺🇸';
+  if(/Chianti|Tuscany|Piemonte|Prosecco/i.test(en||'')) return '🇮🇹';
+  if(/Rioja|Priorato/i.test(en||'')) return '🇪🇸';
+  if(/Margaret River|Barossa/i.test(en||'')) return '🇦🇺';
+  if(/Mendoza/i.test(en||'')) return '🇦🇷';
+  return '';
+}
+// 渲染分类后：给品名前面插国旗
+function decorateFlags(root, sk, catId){
+  if(!root) return;
+  if(FLAGS_SETTINGS.hideAll) return;
+  (root.querySelectorAll('.item .name')||[]).forEach(function(nameEl){
+    if(nameEl.querySelector('.flag')) return;
+    const zh = (nameEl.childNodes[0] && nameEl.childNodes[0].nodeType===3 ? nameEl.childNodes[0].textContent : nameEl.textContent).trim();
+    const en = (nameEl.querySelector('.en-name')||{}).textContent||'';
+    const key = sk+'|'+catId+'|'+zh;
+    let fg = FLAGS_SETTINGS.overrides[key];
+    if(fg===undefined) fg = autoFlag(zh,en);
+    if(!fg || fg==='hide') return;
+    const sp=document.createElement('span'); sp.className='flag'; sp.textContent=fg;
+    nameEl.insertBefore(sp, nameEl.childNodes[0]);
+  });
+}
 // ========== 菜单数据加载（版本号缓存：仅 version.txt 每次校验，数据文件走浏览器强缓存，弱网秒开） ==========
 let MENU_VER = localStorage.getItem('ph_menu_ver') || '';
 async function refreshMenuVersion(){
@@ -524,6 +570,7 @@ const DATA_READY = (async function(){
       STORE_DATA[m.key] = await fetchMenuJSON('data/' + m.key + '.json');
     }));
     SHISHA_CONTENT = await fetchMenuJSON('data/shisha.json');
+    try{ FLAGS_SETTINGS = await fetchMenuJSON('data/flags.json'); }catch(e){ FLAGS_SETTINGS = {hideAll:false,overrides:{}}; }
     renderStoreButtons();
     window.__dataReady = true;
     var bm = document.getElementById('boot-mask'); if(bm) bm.remove();
@@ -622,6 +669,7 @@ function showCat(catId) {
 
     // 切换内容
     document.getElementById('menu-content').innerHTML = data.content[catId];
+    decorateFlags(document.getElementById('menu-content'), currentStore, catId);
     window.scrollTo(0, 0);
 }
 

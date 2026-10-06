@@ -51,7 +51,9 @@ async function loadData(){
   if(!STORE_KEYS.includes(activeStore)) activeStore=STORE_KEYS[0];
   await Promise.all(STORE_KEYS.map(async k=>{ stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json(); }));
   const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
-  DATA={stores,shisha,storesList:manifest};
+  let flags={hideAll:false,overrides:{}};
+  try{ flags=await (await fetch('../data/flags.json?t='+Date.now())).json(); }catch(e){}
+  DATA={stores,shisha,storesList:manifest,flags};
 }
 
 // ---------- 分类 ----------
@@ -220,11 +222,15 @@ function renderEdit(){
       const sp=itemSpan(refHtml,idx);
       const itHtml=sp?refHtml.slice(sp[0],sp[1]):'';
       const isSold=/class="item[^"]*\bsold-out\b/.test(itHtml);
-      html+=`<div class="item-card${isSold?' is-sold':''}" data-ref="${ref.key}" data-idx="${idx}">
+      const fgKey=sk+'|'+ref.key+'|'+it.zhName;
+      const fgVal=DATA.flags.overrides[fgKey]!==undefined?DATA.flags.overrides[fgKey]:'';
+      const fgOpts=[['','自动'],['hide','隐藏'],['🇫🇷','法国'],['🇨🇱','智利'],['🇳🇿','新西兰'],['🇮🇹','意大利'],['🇪🇸','西班牙'],['🇦🇺','澳大利亚'],['🇺🇸','美国'],['🇩🇪','德国'],['🇬🇧','英国/苏格兰'],['🇯🇵','日本'],['🇲🇽','墨西哥'],['🇨🇦','加拿大'],['🇦🇷','阿根廷'],['🇿🇦','南非'],['🇵🇹','葡萄牙'],['🇨🇳','中国']]
+        .map(([v,l])=>`<option value="${v}" ${v===fgVal?'selected':''}>${v? v+' ':''}${l}</option>`).join('');
+      html+=`<div class="item-card${isSold?' is-sold':''}" data-ref="${ref.key}" data-idx="${idx}" data-fgkey="${esc(fgKey)}">
         <div class="ic-name">${esc(it.zhName)}${it.enRaw?`<span class="ic-en">${esc(it.enRaw)}</span>`:''}</div>
         ${it.subText?`<div class="ic-sub">${esc(it.subText)}</div>`:''}
         <div class="ic-price">${esc(it.priceText)||'<span style="color:var(--mut)">（无价格）</span>'}${isSold?' <span class="ic-soldtag">售尽</span>':''}</div>
-        <div class="ic-actions"><button act="edit">改价 / 改名</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
+        <div class="ic-actions"><select class="ic-flag" title="国旗">${fgOpts}</select><button act="edit">改价 / 改名</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
         <div class="edit-form">
           <input class="ef-zh" value="${esc(it.zhName)}" placeholder="中文名">
           <input class="ef-en" value="${esc(it.enRaw)}" placeholder="英文名（可留空）">
@@ -244,7 +250,15 @@ function renderEdit(){
     card.querySelector('.ef-save').onclick=()=>onSave(sk,ref,idx,card);
     card.querySelector('[act=sold]').onclick=()=>onToggleSold(sk,ref,idx);
     card.querySelector('[act=del]').onclick=()=>onDelete(sk,ref,idx,card);
+    card.querySelector('.ic-flag').onchange=e=>setFlagOverride(card.dataset.fgKey,e.target.value,card);
   });
+}
+function setFlagOverride(key,val,card){
+  const before=JSON.parse(JSON.stringify(DATA.flags));
+  if(val==='') delete DATA.flags.overrides[key];
+  else DATA.flags.overrides[key]=val;
+  stages.push({kind:'file',path:'data/flags.json',beforeObj:before,afterObj:DATA.flags,desc:`国旗：${key.split('|').pop()} → ${val||'自动'}`});
+  refreshAll();
 }
 function onToggleSold(sk,ref,idx){
   const it=collectItems(getCatHtml(sk,ref))[idx];
@@ -316,7 +330,7 @@ function onAdd(){
 
 // ---------- 暂存 / 校验 ----------
 function dirtyFiles(){ return [...new Set(stages.map(fileOf))]; }
-function refreshAll(){ renderEdit(); renderStage(); }
+function refreshAll(){ renderEdit(); renderStage(); const h=document.getElementById('fg-hide-all'); if(h && DATA.flags) h.checked=!!DATA.flags.hideAll; }
 function renderStage(){
   const n=stages.length;
   const badge=$('#stage-badge'); badge.style.display=n?'inline-block':'none'; badge.textContent=n;
@@ -350,6 +364,12 @@ function undoStage(i){
 }
 $('#btn-discard').onclick=discardAll;
 $('#btn-discard-m').onclick=discardAll;
+$('#fg-hide-all').onchange=e=>{
+  const before=JSON.parse(JSON.stringify(DATA.flags));
+  DATA.flags.hideAll=e.target.checked;
+  stages.push({kind:'file',path:'data/flags.json',beforeObj:before,afterObj:DATA.flags,desc:e.target.checked?'总开关：隐藏所有门店国旗':'总开关：恢复显示国旗'});
+  refreshAll();
+};
 function discardAll(){
   if(!confirm('放弃全部改动并还原菜单？')) return;
   // 从后向前还原
