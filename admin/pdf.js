@@ -19,7 +19,7 @@ export function linesFromText(text){
 
 const PRICE_RE = /(?:¥|RMB)?\s*([\d,]{2,6})\s*(?:\/\s*(\d+)?\s*(瓶|杯|壶|套|份|位|盒|支|罐|听|扎))?/g;
 // 菜单里常见的分类标题（整单识别时按这些行分节）
-const CAT_NAMES=['白葡萄酒','红葡萄酒','红酒','桃红葡萄酒','桃红','起泡酒','葡萄酒','威士忌','威士忌杯卖','杯卖酒','杯卖','香槟','香槟套餐','香槟系列','白兰地','干邑','烈酒','洋酒','白酒','黄酒','日本酒','龙舌兰','朗姆酒','朗姆','金酒','琴酒','伏特加','利口酒','力娇酒','开胃酒','清酒','日本清酒','烧酒','烧酎','梅酒','果酒','啤酒','鸡尾酒','经典鸡尾酒','特调鸡尾酒','特调','水烟','水烟特调','软饮','软饮果汁','果汁','咖啡','茶','矿泉水','小食','小吃','果盘','雪茄','香烟','套餐','会员充值','充值','须知','包厢','房间','其他'];
+const CAT_NAMES=['白葡萄酒','红葡萄酒','红酒','桃红葡萄酒','桃红','起泡酒','葡萄酒','威士忌','威士忌杯卖','杯卖酒','杯卖','香槟','香槟套餐','香槟系列','白兰地','干邑','干邑白兰地套餐','威士忌套餐','烈酒','洋酒','白酒','黄酒','日本酒','龙舌兰','龙舌兰套餐','朗姆酒','朗姆','金酒','金酒套餐','金酒/伏特加套餐','伏特加套餐','伏特加','琴酒','伏特加','利口酒','力娇酒','开胃酒','清酒','日本清酒','烧酒','烧酎','梅酒','果酒','啤酒','啤酒套餐','鸡尾酒','经典鸡尾酒','特调鸡尾酒','特调','宾治','宾治&无酒精鸡尾酒','无酒精鸡尾酒','白葡鸡尾酒','白葡萄酒鸡尾酒','水烟','水烟特调','软饮','软饮果汁','软饮料','果汁','咖啡','茶','矿泉水','小食','小吃','果盘','雪茄','香烟','套餐','会员充值','充值','须知','包厢','房间','其他'];
 const CAT_SET=new Set(CAT_NAMES);
 // 系统/非卖品分类：整单识别时跳过，不入菜单（会员充值不许改）
 const SYSTEM_CAT_NAMES=new Set(['会员充值','充值','须知','包厢','房间']);
@@ -29,7 +29,8 @@ function normCatLine(s){
 function isCatLine(e,line){
   const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
   if(!zhChars) return false;
-  if(/\d/.test(line)) return false;
+  // 标题里允许自带单价：经典鸡尾酒（¥90/杯）
+  if(/\d/.test(line) && !/[（(]?\s*¥?\s*\d+\s*\/\s*(?:杯|份|位)\s*[)）]?\s*$/.test(line.trim())) return false;
   return CAT_SET.has(normCatLine(e.zh));
 }
 
@@ -42,19 +43,24 @@ function parseEntryLine(line){
     const hasMark=/¥|RMB/.test(m[0]);
     const hasUnit=!!m[3];
     const after=line.slice(m.index+m[0].length).trimStart();
-    if(after[0]==='年') continue; // 年份（12年/15年）不是价格
-    // 不带 ¥ 的 1900-2099 四位数：是年份（2018 Chateau / Blanc 2018 法国），不是价格
-    if(price>=1900&&price<=2099 && !hasMark) continue;
-    // 无 ¥/单位 的裸数字：≥100 才算价；两位数仅当整行就是这个数（独占一行的杯卖价）
-    if(!hasMark&&!hasUnit){
-      if(price<100 && line.replace(/[\s¥RMB]/g,'')!==m[1]) continue;
+    if(after[0]==='年') continue; // 年份（12年/15年）不是价格，且保留在品名里
+    // 不带 ¥ 的 1900-2099 四位数：是年份（2018 Chateau / Blanc 2018 法国），从品名抠掉
+    if(price>=1900&&price<=2099 && !hasMark){ nameLine=nameLine.replace(m[0],' '); continue; }
+    // 容量 ml/L：750ml / 150ml 不是价格，从品名抠掉
+    if(/^(ml|l)\b/i.test(after)){ nameLine=nameLine.replace(m[0],' '); continue; }
+    // 裸数字（无 ¥）：后面紧跟英文品牌（818 Tequila）或左边紧贴中文（詹娜818金）是品牌名，不是价格，从品名抠掉；仅对≥100的（两位数是年份 12 Years）
+    if(!hasMark && !hasUnit && price>=100){
+      if(/[A-Za-z]/.test(after[0]||'')){ nameLine=nameLine.replace(m[0],' '); continue; }
+      if(/[一-鿿]/.test(line[m.index-1]||'')){ nameLine=nameLine.replace(m[0],' '); continue; }
     }
+    // 无 ¥ 的价格：≥100 才算；<100 的数字（10瓶/24瓶/50ml）是数量或容量，除非整行就这一个数
+    if(!hasMark && price<100 && line.replace(/[\s¥RMB]/g,'')!==m[1]) continue;
     const qty=m[2]?parseInt(m[2],10):1;
     const spec=m[3]||'瓶';
     pairs.push({price,qty,spec});
     nameLine=nameLine.replace(m[0],' ');
   }
-  nameLine=nameLine.replace(/（?\s*\d+\s*(?:杯|瓶|份|位|壶|套)\s*）?\s*$/,'').replace(/\s+/g,' ').trim();
+  nameLine=nameLine.replace(/（?\s*\d+\s*(?:杯|瓶|份|位|壶|套)\s*）?\s*$/,'').replace(/^[\s\/\\·•:：\-—]+/,'').replace(/\s+/g,' ').trim();
   const enM = nameLine.match(/[A-Za-z][A-Za-z0-9.&'’\-–—/\s]*[A-Za-z0-9.]/);
   let zh='', en='';
   if(enM){
@@ -69,14 +75,25 @@ function parseEntryLine(line){
 
 // 表格表头行：品名 Item / 产地 Origin / 单瓶 Bottle / 3瓶 等
 function isHeaderRow(line){
-  if(!/品名|Item/i.test(line)) return false;
-  return /产地|Origin|单瓶|Bottle|\d+\s*瓶/i.test(line);
+  if(/^中文\s*English$/i.test(line.trim())) return true;
+  if(!/品名|Item|中文|English/i.test(line)) return false;
+  return /产地|Origin|单瓶|Bottle|价格|Price|配料|Ingredients|基酒|Base|\d+\s*瓶|套餐价|包含酒款|Items/i.test(line);
 }
-// 表头行各列数量单位，如 “1瓶 3瓶 5瓶” → [1,3,5]
+// 表头行各列数量单位，如 “1瓶 3瓶 5瓶” 或 “套餐价(1/3/5瓶)” → [1,3,5]
 function headerUnits(line){
-  const arr=[...line.matchAll(/(\d+)\s*瓶/g)].map(m=>parseInt(m[1],10));
-  if(/单瓶|\/Bottle/i.test(line) && !arr.includes(1)) arr.unshift(1);
+  const m=line.match(/(\d+(?:\s*[\/]\s*\d+)*)\s*瓶/);
+  let arr=[];
+  if(m) arr=m[1].split('/').map(s=>parseInt(s.trim(),10)).filter(n=>n>=1);
+  if(!arr.length) arr=[...line.matchAll(/(\d+)\s*瓶/g)].map(x=>parseInt(x[1],10));
+  if(!arr.length && /套餐价/.test(line)) arr=[1,3,5]; // 套餐价列固定 1/3/5瓶
+  if(/单瓶|\/Bottle/i.test(line) && arr[0]!==1 && !/套餐价/.test(line)) arr.unshift(1);
   return arr;
+}
+// 行尾括注数量：（仅1瓶）（10瓶迷你50ml）（1/3/5瓶，含2/4/6软饮）
+function annotateUnits(line){
+  const m=line.match(/[（(][^)）]*?(\d+(?:\s*[\/]\s*\d+)*)\s*瓶/);
+  if(!m) return null;
+  return m[1].split('/').map(s=>parseInt(s.trim(),10));
 }
 // 封面/脚注行
 function isCoverLine(line){
@@ -140,15 +157,26 @@ export function parsePdfSections(lines){
     if(pending && pending.zh && cur){ pending.pairs=applyU(pending.pairs); cur.entries.push(pending); }
     pending=null;
   };
-  const newSection=name=>{ flush(); cur={catName:name,entries:[]}; sections.push(cur); };
+  const newSection=(name,rawLine)=>{ flush();
+    let def=null;
+    const dm=(rawLine||name||'').match(/¥?\s*(\d{2,5})\s*\/\s*(杯|份|位)/);
+    if(dm) def={price:+dm[1], spec:dm[2]};
+    cur={catName:name,entries:[],default:def,prePairs:[]}; sections.push(cur);
+  };
   for(let li=0; li<lines.length; li++){
     const line=lines[li];
     if(isHeaderRow(line)){ flush(); colUnits=headerUnits(line); continue; }
     if(isCoverLine(line)){ flush(); continue; }
-    const e=parseEntryLine(line);
+    let e=parseEntryLine(line);
+    // 行尾括注数量覆盖：（仅1瓶）（10瓶迷你50ml）（1/3/5瓶，含软饮），并把括注从品名里清掉
+    const ann=annotateUnits(line);
+    if(ann && e.pairs.length===ann.length){
+      e={...e,pairs:e.pairs.map((p,i)=>({...p,qty:ann[i]}))};
+      e.zh=e.zh.replace(/[（(][^)）]*\d+\s*瓶[^)）]*[)）]/g,'').replace(/^\s*[（(][^)）]*[)）]\s*/,'').trim();
+    }
     const zhChars=(e.zh.match(/[一-鿿]/g)||[]).length;
     const isEnTitle = !zhChars && /[A-Za-z]/.test(line) && !/\d/.test(line);
-    if(isCatLine(e,line)){ newSection(normCatLine(e.zh)); continue; }
+    if(isCatLine(e,line)){ newSection(normCatLine(e.zh), line); continue; }
     if(isEnTitle){ if(pending && e.en) pending.en=pending.en||e.en; continue; }
     if(!cur) newSection(null);
     // 无价格中文名行，且下一行是表头 → 小节标题，不是单品
@@ -159,6 +187,9 @@ export function parsePdfSections(lines){
       else if(cur.entries.length){
         // 纯价格行（常见为 /3瓶 套餐价独占一行）：并入上一单品
         cur.entries[cur.entries.length-1].pairs.push(...e.pairs);
+      } else {
+        // 节内价格行出现在品名之前（金酒套餐 ¥1,280/3,500/5,800 先列价）：预存给后续无价品名继承
+        cur.prePairs=applyU(e.pairs);
       }
       continue;
     }
@@ -173,11 +204,13 @@ export function parsePdfSections(lines){
   flush();
   // 每节内分组价向上继承
   sections.forEach(s=>{
-    let lastPairs=[];
+    let lastPairs=s.prePairs||[];
     s.entries.forEach(en=>{
       if(en.pairs.length) lastPairs=en.pairs;
       else if(lastPairs.length) en.pairs=lastPairs.map(p=>({...p,inherited:true}));
     });
+    // 标题自带单价（如 经典鸡尾酒（¥90/杯））：无价单品补该价
+    if(s.default) s.entries.forEach(en=>{ if(!en.pairs.length) en.pairs=[{price:s.default.price,qty:1,spec:s.default.spec,inherited:true}]; });
   });
   return sections.filter(s=>s.entries.length);
 }
