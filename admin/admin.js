@@ -1151,7 +1151,7 @@ function ensureCategoryForPdf(sk,catName){
   const d=DATA.stores[sk];
   const before=JSON.parse(JSON.stringify(d));
   const cid=uniqueCatId(d);
-  d.categories.push({id:cid,name:catName}); d.content[cid]='';
+  d.categories.push({id:cid,name:catName}); d.content[cid]=`<div class="card"><h2>${esc(catName)}</h2>\n</div>`;
   const after=JSON.parse(JSON.stringify(d));
   stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:before,afterObj:after,desc:`${d.name}：PDF 自动新建分类「${catName}」`,tag:'add'});
   DATA.stores[sk]=after;
