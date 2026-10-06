@@ -705,6 +705,50 @@ function autoFlag(zh, en){
   if(/Mendoza/i.test(en||'')) return '🇦🇷';
   return '';
 }
+// 联网查：维基百科识别酒的出产国（只查一次，结果存 localStorage）
+const FLAG_WORDS=[
+ [/France|French|Bordeaux|Burgundy|Bourgogne|Champagne|Cognac|Rhone|Loire|Provence|Burgundian/i,'🇫🇷'],
+ [/Italy|Italian|Tuscany|Piemonte|Veneto|Sicily|Toscana|Puglia|Abruzzo/i,'🇮🇹'],
+ [/Spain|Spanish|Rioja|Catalonia|Andalusia|Castile|Castilla/i,'🇪🇸'],
+ [/Germany|German|Rheingau|Mosel|Pfalz|Rheinhessen|Württemberg/i,'🇩🇪'],
+ [/Portuguese|Portugal|Douro|Porto/i,'🇵🇹'],[/Greece|Greek/i,'🇬🇷'],[/Austrian|Austria/i,'🇦🇹'],
+ [/Swiss|Switzerland/i,'🇨🇭'],[/Hungar/i,'🇭🇺'],[/Romania/i,'🇷🇴'],
+ [/United States|American|California|Napa|Oregon|Washington State|Kentucky|Tennessee/i,'🇺🇸'],
+ [/Canadian|Canada|Ontario|British Columbia/i,'🇨🇦'],
+ [/Mexico|Mexican|Jalisco|Tequila/i,'🇲🇽'],[/Argentina|Mendoza|Argentine/i,'🇦🇷'],
+ [/Chilean|Chile|Colchagua|Apalta/i,'🇨🇱'],[/Brazilian|Brazil/i,'🇧🇷'],
+ [/Peruvian|Peru|Pisco/i,'🇵🇪'],[/Colombia/i,'🇨🇴'],[/Uruguay/i,'🇺🇾'],
+ [/South Africa|South African|Stellenbosch/i,'🇿🇦'],
+ [/Australia|Australian|Barossa|Margaret River|Hunter Valley|Adelaide/i,'🇦🇺'],
+ [/New Zealand| Marlborough|Central Otago|Hawke.i,'🇳🇿'],
+ [/Chinese|China|Ningxia|Shandong|Yantai|Penglai/i,'🇨🇳'],
+ [/Japanese|Japan|Yamazaki|Hakushu|Suntory/i,'🇯🇵'],[/Korea|Korean/i,'🇰🇷'],
+ [/Thai|Thailand/i,'🇹🇭'],[/Vietnam|Vietnamese/i,'🇻🇳'],
+ [/Scotland|Scottish|Speyside|Islay|Highland|England|Welsh|United Kingdom|Britain/i,'🇬🇧'],
+ [/Irish|Ireland/i,'🇮🇪'],[/Belgian|Belgium/i,'🇧🇪'],
+ [/Dutch|Netherlands|Holland/i,'🇳🇱'],[/Danish|Denmark|Carlsberg/i,'🇩🇰'],
+ [/Sweden|Swedish|Absolut/i,'🇸🇪'],[/Norwegian|Norway/i,'🇳🇴'],[/Finnish|Finland/i,'🇫🇮'],
+ [/Polish|Poland|Belvedere/i,'🇵🇱'],[/Cuban|Cuba/i,'🇨🇺'],
+ [/Dominican/i,'🇩🇴'],[/Trinidad/i,'🇹🇹']
+];
+async function lookupFlag(zh, en){
+  try{
+    const cache=JSON.parse(localStorage.getItem('ph_flag_lookup')||'{}');
+    const key=(zh||'')+'|'+(en||'');
+    if(cache[key]!==undefined) return cache[key];
+    const q=encodeURIComponent(en||zh||'');
+    const s=await (await fetch('https://en.wikipedia.org/w/api.php?action=opensearch&search='+q+'&limit=1&format=json&origin=*')).json();
+    let res='';
+    if(s[1] && s[1][0]){
+      const sum=await (await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(s[1][0])+'?origin=*')).json();
+      res=(sum.extract||'');
+    }
+    let hit='';
+    for(const [re,fg] of FLAG_WORDS){ if(re.test(res)){ hit=fg; break; } }
+    cache[key]=hit; localStorage.setItem('ph_flag_lookup', JSON.stringify(cache));
+    return hit;
+  }catch(e){ return ''; }
+}
 // 渲染分类后：给品名前面插国旗
 function decorateFlags(root, sk, catId){
   if(!root) return;
@@ -717,7 +761,18 @@ function decorateFlags(root, sk, catId){
     const key = sk+'|'+catId+'|'+zh;
     let fg = FLAGS_SETTINGS.overrides[key];
     if(fg===undefined) fg = autoFlag(zh,en);
-    if(!fg || fg==='hide') return;
+    if(!fg || fg==='hide'){
+      // 没有规则：联网维基百科查一次，结果缓存
+      lookupFlag(zh, en).then(function(found){
+        if(!found) return;
+        if(nameEl.querySelector('.flag')) return;
+        const uri=flagDataUri(found); if(!uri) return;
+        const img=document.createElement('img');
+        img.className='flag'; img.src=uri; img.alt=found; img.width=15; img.height=15;
+        nameEl.insertBefore(img, nameEl.childNodes[0]);
+      });
+      return;
+    }
     const uri=flagDataUri(fg);
     if(!uri) return;
     const img=document.createElement('img');
