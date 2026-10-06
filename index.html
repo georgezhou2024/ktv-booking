@@ -407,6 +407,10 @@
                 right: 90px;
             }
         }
+    /* 沽清/售尽样式 */
+    .item.sold-out{opacity:.55;filter:grayscale(.5);}
+    .item.sold-out .name{text-decoration:line-through;text-decoration-color:rgba(255,80,80,.7);}
+    .sold-badge{display:inline-block;margin-left:8px;padding:1px 9px;border-radius:9px;background:#b3242a;color:#fff;font-size:11px;font-weight:600;letter-spacing:1px;vertical-align:middle;}
     </style>
 </head>
 <body>
@@ -565,8 +569,9 @@ function enterStore(storeKey) {
     // 渲染分类按钮
     renderTabs(data);
     // 默认进入主页面分类网格（首项为房间/水烟等全屏板块时，不直接进入）
-    const firstCat = data.categories[0];
-    if (firstCat.id === 'rooms' || firstCat.id === 'shisha') {
+    const firstCat = visibleCats(data)[0];
+    if (!firstCat) { showHome(); }
+    else if (firstCat.id === 'rooms' || firstCat.id === 'shisha') {
         showHome();
     } else {
         showCat(firstCat.id);
@@ -590,13 +595,15 @@ function backToStore() {
     document.getElementById('store-select-page').style.display = 'block';
 }
 
-// 渲染分类标签
+// 渲染分类标签（后台隐藏的分类不显示）
 function renderTabs(data) {
     const tabsContainer = document.getElementById('menu-tabs');
-    tabsContainer.innerHTML = data.categories.map(cat => 
+    const visible = data.categories.filter(c => !c.hidden);
+    tabsContainer.innerHTML = visible.map(cat =>
         `<button class="cat-btn" data-id="${cat.id}" onclick="showCat('${cat.id}')">${cat.name}</button>`
     ).join('');
 }
+function visibleCats(data){ return data.categories.filter(c => !c.hidden); }
 
 // 切换分类
 function showCat(catId) {

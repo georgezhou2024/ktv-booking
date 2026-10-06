@@ -216,11 +216,15 @@ function renderEdit(){
         if(!hay.includes(q)) return;
       }
       count++;
-      html+=`<div class="item-card" data-ref="${ref.key}" data-idx="${idx}">
+      const refHtml=getCatHtml(sk,ref);
+      const sp=itemSpan(refHtml,idx);
+      const itHtml=sp?refHtml.slice(sp[0],sp[1]):'';
+      const isSold=/class="item[^"]*\bsold-out\b/.test(itHtml);
+      html+=`<div class="item-card${isSold?' is-sold':''}" data-ref="${ref.key}" data-idx="${idx}">
         <div class="ic-name">${esc(it.zhName)}${it.enRaw?`<span class="ic-en">${esc(it.enRaw)}</span>`:''}</div>
         ${it.subText?`<div class="ic-sub">${esc(it.subText)}</div>`:''}
-        <div class="ic-price">${esc(it.priceText)||'<span style="color:var(--mut)">（无价格）</span>'}</div>
-        <div class="ic-actions"><button act="edit">改价 / 改名</button><button act="del" class="del">下架删除</button></div>
+        <div class="ic-price">${esc(it.priceText)||'<span style="color:var(--mut)">（无价格）</span>'}${isSold?' <span class="ic-soldtag">售尽</span>':''}</div>
+        <div class="ic-actions"><button act="edit">改价 / 改名</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
         <div class="edit-form">
           <input class="ef-zh" value="${esc(it.zhName)}" placeholder="中文名">
           <input class="ef-en" value="${esc(it.enRaw)}" placeholder="英文名（可留空）">
@@ -238,8 +242,30 @@ function renderEdit(){
     card.querySelector('[act=edit]').onclick=()=>{ card.querySelector('.edit-form').classList.add('on'); };
     card.querySelector('.ef-cancel').onclick=()=>{ card.querySelector('.edit-form').classList.remove('on'); };
     card.querySelector('.ef-save').onclick=()=>onSave(sk,ref,idx,card);
+    card.querySelector('[act=sold]').onclick=()=>onToggleSold(sk,ref,idx);
     card.querySelector('[act=del]').onclick=()=>onDelete(sk,ref,idx,card);
   });
+}
+function onToggleSold(sk,ref,idx){
+  const it=collectItems(getCatHtml(sk,ref))[idx];
+  const refHtml=getCatHtml(sk,ref);
+  const sp=itemSpan(refHtml,idx);
+  const wasSold=/class="item[^"]*\bsold-out\b/.test(sp?refHtml.slice(sp[0],sp[1]):'');
+  applyMutation(sk,ref,`${ref.label}：${it.zhName} ${wasSold?'恢复沽清':'标为售尽（沽清）'}`,'change',html=>{
+    const span=itemSpan(html,idx); if(!span) return html;
+    let item=html.slice(span[0],span[1]);
+    if(wasSold){
+      item=item.replace(/class="item sold-out"/,'class="item"').replace(/\s*<span class="sold-badge">售尽<\/span>/,'');
+    }else{
+      item=item.replace('<div class="item">','<div class="item sold-out">');
+      if(!/sold-out/.test(item)) item=item.replace(/<div\b([^>]*)class="item"/,'<div$1class="item sold-out"');
+      item=item.replace(/(<div\b[^>]*class="[^"]*\bprice\b[^>]*"[^>]*>[\s\S]*?<\/div>)/,'$1<span class="sold-badge">售尽</span>');
+    }
+    return html.slice(0,span[0])+item+html.slice(span[1]);
+  });
+  toast(wasSold?'已恢复：菜单恢复正常':'已沽清：菜单显示「售尽」');
+  renderEdit();
+  renderStage();
 }
 function onSave(sk,ref,idx,card){
   const it=collectItems(getCatHtml(sk,ref))[idx];
@@ -964,7 +990,7 @@ function renderStores(){
     const d=DATA.stores[sk]; if(!d) return '';
     const m=DATA.storesList.find(x=>x.key===sk)||{sub:''};
     const hidden=!!m.hidden;
-    const cats=d.categories.map(c=>`<span class="cat-chip">${esc(c.name)}</span>`).join('')||'<span class="pdf-hint">暂无分类</span>';
+    const cats=d.categories.map(c=>`<span class="cat-chip${c.hidden?' cat-hidden':''}">${esc(c.name)}<button class="cc-hide" data-chide="${sk}|${c.id}" title="隐藏/恢复">${c.hidden?'显示':'隐藏'}</button><button class="cc-del" data-cdel="${sk}|${c.id}" title="删除该分类">✕</button></span>`).join('')||'<span class="pdf-hint">暂无分类</span>';
     return `<div class="store-row${hidden?' hidden-store':''}" data-row="${sk}">
       <div class="sr-head">
         <div><div class="sr-name">${esc(d.name)} <span class="sr-meta">(${esc(sk)}，键名不可改)</span>${hidden?' <span class="rc-newtag" style="background:#3a2a14;border-color:#8a6a2a;color:#e0b878">已隐藏（菜单/比价不显示）</span>':''}</div>
@@ -996,6 +1022,8 @@ function renderStores(){
     if(!name){ toast('请输入分类名称'); return; }
     addCategory(sk,name); inp.value='';
   });
+  $$('#store-list [data-chide]').forEach(b=>b.onclick=()=>{ const [sk,cid]=b.dataset.chide.split('|'); toggleHideCat(sk,cid); });
+  $$('#store-list [data-cdel]').forEach(b=>b.onclick=()=>{ const [sk,cid]=b.dataset.cdel.split('|'); deleteCategory(sk,cid); });
   $$('#store-list [data-edit]').forEach(b=>b.onclick=()=>{
     box.querySelector(`[data-editbox="${b.dataset.edit}"]`).style.display='block';
   });
@@ -1081,6 +1109,29 @@ function addCategory(sk,name){
   d.categories.push({id,name}); d.content[id]='';
   const after=JSON.parse(JSON.stringify(d));
   stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:before,afterObj:after,desc:`${d.name}：新增分类「${name}」`,tag:'add'});
+  DATA.stores[sk]=after;
+  fillSelects(); renderStores(); renderStage();
+  toast('分类已加入待发布');
+}
+// 分类隐藏/恢复（菜单不显示，数据保留）与彻底删除
+function toggleHideCat(sk,catId){
+  const d=DATA.stores[sk]; const c=d.categories.find(x=>x.id===catId); if(!c) return;
+  const before=JSON.parse(JSON.stringify(d));
+  if(c.hidden) delete c.hidden; else c.hidden=true;
+  const after=JSON.parse(JSON.stringify(d));
+  stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:before,afterObj:after,desc:`${d.name}：${c.hidden?'隐藏':'恢复显示'}分类「${c.name}」`,tag:'cat'});
+  DATA.stores[sk]=after;
+  fillSelects(); renderStores(); renderStage();
+  toast(c.hidden?'分类已隐藏（菜单不显示，数据保留）':'分类已恢复显示');
+}
+function deleteCategory(sk,catId){
+  const d=DATA.stores[sk]; const c=d.categories.find(x=>x.id===catId); if(!c) return;
+  const n=(d.content[catId]||'').match(/class="[^"]*\bitem\b/g)||[];
+  if(!confirm(`确认彻底删除分类「${c.name}」及其 ${n.length} 个单品？\n先进入待发布，推送后线上生效，可在待发布撤销。`)) return;
+  const before=JSON.parse(JSON.stringify(d));
+  d.categories=d.categories.filter(x=>x.id!==catId); delete d.content[catId];
+  const after=JSON.parse(JSON.stringify(d));
+  stages.push({kind:'file',path:`data/${sk}.json`,beforeObj:before,afterObj:after,desc:`${d.name}：删除分类「${c.name}」（${n.length}个单品）`,tag:'del'});
   DATA.stores[sk]=after;
   fillSelects(); renderStores(); renderStage();
   toast('分类已加入待发布');
