@@ -229,11 +229,27 @@ function makeDoc(dom, html){
 export function clusterCells(cellList){
   const clusters = [];
   const clusterMap = new Map();
+  const normCat = catId => {
+    const c = (catId||'').toLowerCase();
+    if(/white/.test(c)) return 'whitewine';
+    if(/red/.test(c)) return 'redwine';
+    if(/champagne/.test(c)) return 'champagne';
+    if(/whisk/.test(c)) return 'whisky';
+    if(/tequila/.test(c)) return 'tequila';
+    if(/cognac|brandy/.test(c)) return 'cognac';
+    if(/vodka|gin/.test(c)) return 'spirit';
+    if(/beer/.test(c)) return 'beer';
+    if(/soft|drink|juice|water/.test(c)) return 'softdrink';
+    if(/cocktail/.test(c)) return 'cocktail';
+    if(/cigar/.test(c)) return 'cigar';
+    return c;
+  };
   cellList.forEach(c=>{
+    c.normCat = normCat(c.catId);
     const useZh = cjkLen(c.zp)>=2;
     c.useZh = useZh;
-    c.key = (useZh ? 'ZH:'+c.zp : c.en) + '||' + c.catId + '||' + c.spec;
-    if(!clusterMap.has(c.key)) clusterMap.set(c.key, {key:c.key, catId:c.catId, spec:c.spec, cells:[], useZh:useZh});
+    c.key = (useZh ? 'ZH:'+c.zp : c.en) + '||' + c.normCat + '||' + c.spec;
+    if(!clusterMap.has(c.key)) clusterMap.set(c.key, {key:c.key, catId:c.normCat, spec:c.spec, cells:[], useZh:useZh});
     clusterMap.get(c.key).cells.push(c);
   });
   clusters.push(...clusterMap.values());
