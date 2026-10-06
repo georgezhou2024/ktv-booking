@@ -540,16 +540,133 @@ const FLAG_SVG = {
   '🇿🇦':{c:'za',s:"<circle r='20' fill='#007a4d'/><path d='M0 0h40v13H0z' fill='#ffb612'/><path d='M0 27h40v13H0z' fill='#de3831'/>"},
   '🇵🇹':{c:'pt',s:"<circle r='20' fill='#ff0000'/><path d='M0 0h16v40H0z' fill='#046a38'/>"},
   '🇮🇪':{c:'ie',s:"<circle r='20' fill='#fff'/><path d='M0 0h13.3v40H0z' fill='#169b62'/><path d='M26.7 0H40v40H26.7z' fill='#ff883e'/>"},
-  '🇨🇳':{c:'cn',s:"<circle r='20' fill='#de2910'/><path d='M13 11l1.5 3 3.2.4-2.3 2.2.5 3.2-2.9-1.5-2.9 1.5.5-3.2-2.3-2.2 3.2-.4z' fill='#ffde00'/>"}
+  '🇨🇳':{c:'cn',s:"<circle r='20' fill='#de2910'/><path d='M13 11l1.5 3 3.2.4-2.3 2.2.5 3.2-2.9-1.5-2.9 1.5.5-3.2-2.3-2.2 3.2-.4z' fill='#ffde00'/>"},
+  '🇳🇱':{c:'nl',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ae1c28'/><path d='M0 26.7h40v13.3H0z' fill='#21468b'/>"},
+  '🇧🇪':{c:'be',s:"<circle r='20' fill='#fdda24'/><path d='M0 0h13.3v40H0z' fill='#000'/><path d='M26.7 0H40v40H26.7z' fill='#ef3340'/>"},
+  '🇩🇰':{c:'dk',s:"<circle r='20' fill='#c60c30'/><path d='M14 0v40M6.5 0v40' stroke='#fff' stroke-width='4'/><path d='M6.5 20H40' stroke='#fff' stroke-width='4'/>"},
+  '🇳🇴':{c:'no',s:"<circle r='20' fill='#ba0c2f'/><path d='M13 0v40M6.5 0v40' stroke='#fff' stroke-width='5'/><path d='M6.5 20H40' stroke='#fff' stroke-width='5'/>"},
+  '🇹🇭':{c:'th',s:"<circle r='20' fill='#a51931'/><path d='M0 8h40v24H0z' fill='#fff'/><path d='M0 14h40v12H0z' fill='#2d2a4a'/>"},
+  '🇸🇪':{c:'se',s:"<circle r='20' fill='#006aa7'/><path d='M13 0v40M6.5 0v40' stroke='#fecc00' stroke-width='4'/><path d='M6.5 20H40' stroke='#fecc00' stroke-width='4'/>"},
+  '🇫🇮':{c:'fi',s:"<circle r='20' fill='#fff'/><path d='M14 0v40M7 0v40' stroke='#003580' stroke-width='5'/><path d='M7 20H40' stroke='#003580' stroke-width='5'/>"},
+  '🇮🇸':{c:'is',s:"<circle r='20' fill='#02529c'/><path d='M13 0v40M6.5 0v40' stroke='#fff' stroke-width='5'/><path d='M6.5 20H40' stroke='#fff' stroke-width='5'/><path d='M13 0v40' stroke='#dc1e35' stroke-width='2.4'/><path d='M6.5 20H40' stroke='#dc1e35' stroke-width='2.4'/>"},
+  '🇨🇭':{c:'ch',s:"<circle r='20' fill='#da291c'/><path d='M17 8v24M8 17h24' stroke='#fff' stroke-width='5'/>"},
+  '🇦🇹':{c:'at',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ed2939'/><path d='M0 26.7h40v13.3H0z' fill='#ed2939'/>"},
+  '🇵🇱':{c:'pl',s:"<circle r='20' fill='#fff'/><path d='M0 20h40v20H0z' fill='#dc143c'/>"},
+  '🇨🇿':{c:'cz',s:"<circle r='20' fill='#fff'/><path d='M0 20h40v20H0z' fill='#d7141a'/><path d='M0 0l20 20L0 40z' fill='#11457e'/>"},
+  '🇭🇺':{c:'hu',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#cd2a3e'/><path d='M0 26.7h40v13.3H0z' fill='#436f4d'/>"},
+  '🇬🇷':{c:'gr',s:"<circle r='20' fill='#0d5eaf'/><path d='M0 7h40M0 14h40M0 21h40M0 28h40' stroke='#fff' stroke-width='2.4'/><path d='M0 35h40v5H0z' fill='#fff'/>"},
+  '🇷🇺':{c:'ru',s:"<circle r='20' fill='#fff'/><path d='M0 13.3h40v13.3H0z' fill='#0039a6'/><path d='M0 26.7h40v13.3H0z' fill='#d52b1e'/>"},
+  '🇺🇦':{c:'ua',s:"<circle r='20' fill='#005bbb'/><path d='M0 20h40v20H0z' fill='#ffd500'/>"},
+  '🇧🇬':{c:'bg',s:"<circle r='20' fill='#fff'/><path d='M0 13.3h40v13.3H0z' fill='#00966e'/><path d='M0 26.7h40v13.3H0z' fill='#d62612'/>"},
+  '🇭🇷':{c:'hr',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ff0000'/><path d='M0 26.7h40v13.3H0z' fill='#171796'/>"},
+  '🇸🇰':{c:'sk',s:"<circle r='20' fill='#fff'/><path d='M0 13.3h40v13.3H0z' fill='#0b4ea2'/><path d='M0 26.7h40v13.3H0z' fill='#ee1c25'/>"},
+  '🇸🇮':{c:'si',s:"<circle r='20' fill='#fff'/><path d='M0 13.3h40v13.3H0z' fill='#000'/><path d='M0 26.7h40v13.3H0z' fill='#ed1c24'/>"},
+  '🇪🇪':{c:'ee',s:"<circle r='20' fill='#000'/><path d='M0 13.3h40v13.3H0z' fill='#fff'/><path d='M0 26.7h40v13.3H0z' fill='#0072ce'/>"},
+  '🇱🇻':{c:'lv',s:"<circle r='20' fill='#9e3039'/><path d='M0 16h40v8H0z' fill='#fff'/>"},
+  '🇱🇹':{c:'lt',s:"<circle r='20' fill='#fdb913'/><path d='M0 13.3h40v13.3H0z' fill='#006a44'/><path d='M0 26.7h40v13.3H0z' fill='#c1272d'/>"},
+  '🇱🇺':{c:'lu',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ef3340'/><path d='M0 26.7h40v13.3H0z' fill='#00a3e0'/>"},
+  '🇲🇨':{c:'mc',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ce1126'/><path d='M0 26.7h40v13.3H0z' fill='#ce1126'/>"},
+  '🇧🇷':{c:'br',s:"<circle r='20' fill='#009c3b'/><path d='M10 10l10-4 10 4v20l-10 4-10-4z' fill='#ffdf00'/><circle cx='20' cy='20' r='5' fill='#002776'/>"},
+  '🇺🇾':{c:'uy',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v6.7H0zM0 13.3h40v6.7H0zM0 26.7h40v6.7H0zM0 33.3h40v6.7H0z' fill='#0038a8'/><circle cx='14' cy='13.3' r='2.6' fill='#fcd116'/>"},
+  '🇵🇾':{c:'py',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#d52b1e'/><path d='M0 26.7h40v13.3H0z' fill='#0038a8'/>"},
+  '🇧🇴':{c:'bo',s:"<circle r='20' fill='#d52b1e'/><path d='M0 13.3h40v13.3H0z' fill='#f9e315'/><path d='M0 26.7h40v13.3H0z' fill='#007a3d'/>"},
+  '🇵🇪':{c:'pe',s:"<circle r='20' fill='#fff'/><path d='M0 0h13.3v40H0z' fill='#d91023'/><path d='M26.7 0H40v40H26.7z' fill='#d91023'/>"},
+  '🇪🇨':{c:'ec',s:"<circle r='20' fill='#ffdd00'/><path d='M0 0h40v13.3H0z' fill='#0072ce'/><path d='M0 26.7h40v13.3H0z' fill='#ef3340'/>"},
+  '🇨🇴':{c:'co',s:"<circle r='20' fill='#fcd116'/><path d='M0 13.3h40v13.3H0z' fill='#003893'/><path d='M0 26.7h40v13.3H0z' fill='#ce1126'/>"},
+  '🇻🇪':{c:'ve',s:"<circle r='20' fill='#ffce00'/><path d='M0 13.3h40v13.3H0z' fill='#00247d'/><path d='M0 26.7h40v13.3H0z' fill='#cf142b'/>"},
+  '🇬🇹':{c:'gt',s:"<circle r='20' fill='#fff'/><path d='M0 0h13.3v40H0z' fill='#4997d0'/><path d='M26.7 0H40v40H26.7z' fill='#4997d0'/>"},
+  '🇨🇷':{c:'cr',s:"<circle r='20' fill='#002b7f'/><path d='M0 8h40v8H0z' fill='#fff'/><path d='M0 24h40v8H0z' fill='#fff'/><path d='M0 32h40v8H0z' fill='#ce1126'/>"},
+  '🇨🇺':{c:'cu',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v8H0z' fill='#002a8f'/><path d='M0 32h40v8H0z' fill='#002a8f'/><path d='M0 0l20 20L0 40z' fill='#002a8f'/><circle cx='9' cy='20' r='2.6' fill='#fff'/>"},
+  '🇯🇲':{c:'jm',s:"<circle r='20' fill='#009b3a'/><path d='M0 6L40 34M40 6L0 34' stroke='#000' stroke-width='6'/><path d='M0 9L40 31M40 9L0 31' stroke='#fed100' stroke-width='2.6'/>"},
+  '🇰🇷':{c:'kr',s:"<circle r='20' fill='#fff'/><circle cx='20' cy='20' r='8' fill='#cd2e3a'/><path d='M20 12a8 8 0 0 1 0 16z' fill='#0047a0'/>"},
+  '🇲🇳':{c:'mn',s:"<circle r='20' fill='#c4272f'/><path d='M0 16h40v8H0z' fill='#015194'/><circle cx='11' cy='20' r='3' fill='#ffd900'/>"},
+  '🇮🇳':{c:'in',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ff9933'/><path d='M0 26.7h40v13.3H0z' fill='#138808'/><circle cx='20' cy='20' r='3.4' fill='#000080'/>"},
+  '🇵🇰':{c:'pk',s:"<circle r='20' fill='#fff'/><path d='M0 0h13.3v40H0z' fill='#01411c'/><path d='M13.3 0H40v40H13.3z' fill='#01411c'/><circle cx='28' cy='14' r='2.6' fill='#fff'/>"},
+  '🇧🇩':{c:'bd',s:"<circle r='20' fill='#006a4e'/><circle cx='17' cy='20' r='8' fill='#f42a41'/>"},
+  '🇱🇰':{c:'lk',s:"<circle r='20' fill='#8d153a'/><path d='M0 0h14v40H0z' fill='#ebb761'/><path d='M0 0h8v40H0z' fill='#00534e'/>"},
+  '🇻🇳':{c:'vn',s:"<circle r='20' fill='#da251d'/><path d='M20 12l2 5 5 .6-3.8 3.4 1 5-4.2-2.6-4.2 2.6 1-5L13 17.6l5-.6z' fill='#ffff00'/>"},
+  '🇲🇾':{c:'my',s:"<circle r='20' fill='#cc0001'/><path d='M0 0h40v20H0z' fill='#fff'/><path d='M0 20h20v20H0z' fill='#010066'/><circle cx='9' cy='10' r='4' fill='#fff'/><circle cx='11' cy='10' r='4' fill='#cc0001'/>"},
+  '🇸🇬':{c:'sg',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ef3340'/><circle cx='10' cy='7' r='2.4' fill='#fff'/><circle cx='15' cy='7' r='2.4' fill='#fff'/><circle cx='12.5' cy='11' r='2.4' fill='#fff'/>"},
+  '🇮🇩':{c:'id',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v20H0z' fill='#e70011'/>"},
+  '🇵🇭':{c:'ph',s:"<circle r='20' fill='#fff'/><path d='M0 0h20v20H0z' fill='#0038a8'/><path d='M0 20h40v20H0z' fill='#ce1126'/><path d='M0 0l20 20M20 0L0 20' stroke='#fff' stroke-width='1.6'/>"},
+  '🇰🇭':{c:'kh',s:"<circle r='20' fill='#032ea3'/><path d='M0 14h40v12H0z' fill='#e00025'/>"},
+  '🇱🇦':{c:'la',s:"<circle r='20' fill='#ce1126'/><path d='M0 13.3h40v13.3H0z' fill='#fff'/><path d='M0 26.7h40v13.3H0z' fill='#002868'/><circle cx='20' cy='20' r='3.4' fill='#ce1126'/>"},
+  '🇮🇷':{c:'ir',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v9H0z' fill='#239f40'/><path d='M0 31h40v9H0z' fill='#da0000'/>"},
+  '🇹🇷':{c:'tr',s:"<circle r='20' fill='#e30a17'/><circle cx='16' cy='20' r='7' fill='#fff'/><circle cx='18.5' cy='20' r='6' fill='#e30a17'/><path d='M25 15l1.4 2.8 3 .4-2.2 2.1.5 3-2.7-1.5-2.7 1.5.5-3-2.2-2.1 3-.4z' fill='#fff'/>"},
+  '🇸🇦':{c:'sa',s:"<circle r='20' fill='#006c35'/><path d='M0 16h40v8H0z' fill='#fff'/><path d='M6 19h16M6 22h16' stroke='#006c35' stroke-width='1.4'/>"},
+  '🇦🇪':{c:'ae',s:"<circle r='20' fill='#fff'/><path d='M0 13.3h40v13.3H0z' fill='#00732f'/><path d='M0 26.7h40v13.3H0z' fill='#000'/><path d='M0 0h10v40H0z' fill='#ff0000'/>"},
+  '🇮🇱':{c:'il',s:"<circle r='20' fill='#fff'/><path d='M0 8h40v4H0zM0 28h40v4H0z' fill='#0038b8'/><path d='M14 8v24M26 8v24' stroke='#0038b8' stroke-width='2.4'/>"},
+  '🇪🇬':{c:'eg',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v13.3H0z' fill='#ce1126'/><path d='M0 26.7h40v13.3H0z' fill='#000'/><circle cx='20' cy='20' r='3.4' fill='#c09300'/>"},
+  '🇲🇦':{c:'ma',s:"<circle r='20' fill='#c1272d'/><path d='M20 13l2 4.5 4.8.5-3.6 3.2 1 4.7-4.2-2.4-4.2 2.4 1-4.7-3.6-3.2 4.8-.5z' fill='#006233'/>"},
+  '🇹🇳':{c:'tn',s:"<circle r='20' fill='#e70013'/><circle cx='20' cy='20' r='7' fill='#fff'/><circle cx='21.5' cy='20' r='5.4' fill='#e70013'/><path d='M23 17l1 2 2.2.3-1.8 1.6.4 2.1-2-1-2 1 .4-2.1-1.8-1.6 2.2-.3z' fill='#e70013'/>"},
+  '🇩🇿':{c:'dz',s:"<circle r='20' fill='#fff'/><path d='M0 0h20v40H0z' fill='#006233'/><circle cx='17' cy='20' r='6' fill='#d21034'/>"},
+  '🇰🇪':{c:'ke',s:"<circle r='20' fill='#000'/><path d='M0 6h40v8H0z' fill='#bb9e5d'/><path d='M0 26h40v8H0z' fill='#bb9e5d'/><path d='M0 14h40v12H0z' fill='#bb9e5d'/>"},
+  '🇳🇬':{c:'ng',s:"<circle r='20' fill='#fff'/><path d='M0 0h13.3v40H0z' fill='#008751'/><path d='M26.7 0H40v40H26.7z' fill='#008751'/>"},
+  '🇬🇭':{c:'gh',s:"<circle r='20' fill='#ce1126'/><path d='M0 13.3h40v13.3H0z' fill='#fcd116'/><path d='M0 26.7h40v13.3H0z' fill='#006b3f'/><circle cx='20' cy='20' r='3.4' fill='#000'/>"},
+  '🇫🇯':{c:'fj',s:"<circle r='20' fill='#69d4f9'/><path d='M0 0h16v20H0z' fill='#012169'/><path d='M0 4L16 16M16 4L0 16' stroke='#fff' stroke-width='2'/>"}
 };
 function flagDataUri(emoji){
   const f=FLAG_SVG[emoji]; if(!f) return '';
   const svg=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'>${f.s}</svg>`;
   return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
 }
+// 品牌知识库：常见酒水/饮料品牌 → 国家（顺序：具体品牌在前）
+const BRAND_FLAGS = [
+  // 苏格兰/英国
+  ['麦卡伦|Macallan|麦卡伦','🇬🇧'],['格兰路思|Glenrothes','🇬🇧'],['格兰杰|Glenmorangie','🇬🇧'],
+  ['格兰威特|Glenlivet','🇬🇧'],['格兰菲迪|Glenfiddich','🇬🇧'],['百富|Balvenie','🇬🇧'],
+  ['苏格登|Singleton','🇬🇧'],['波摩|Bowmore','🇬🇧'],['高原骑士|Highland Park','🇬🇧'],
+  ['尊尼获加|Johnnie Walker|黑牌|红牌|黑方|红方','🇬🇧'],['芝华士|Chivas','🇬🇧'],
+  ['百龄坛|Ballantine','🇬🇧'],['拉加维林|Lagavulin','🇬🇧'],['阿贝|Ardbeg','🇬🇧'],
+  ['云顶|Springbank','🇬🇧'],['泰斯卡|Talisker','🇬🇧'],['卡尔里拉|Caol Ila','🇬🇧'],
+  ['皇家礼炮|Royal Salute','🇬🇧'],['顺风|Cutty Sark','🇬🇧'],['帝王|Dewar','🇬🇧'],
+  ['欧本|Oban','🇬🇧'],['格兰冠|Glen Grant','🇬🇧'],['朗摩|Longmorn','🇬🇧'],
+  ['布赫拉迪|Bruichladdich','🇬🇧'],['克莱嘉赫|Craigellachie','🇬🇧'],
+  // 日本
+  ['山崎|Yamazaki','🇯🇵'],['白州|Hakushu','🇯🇵'],['响|Hibiki','🇯🇵'],
+  ['竹鹤|Taketsuru','🇯🇵'],['余市|Yoichi','🇯🇵'],['知多|Chita','🇯🇵'],
+  ['仓吉|Kurayoshi','🇯🇵'],['明石|Akashi','🇯🇵'],['户河内|Togouchi','🇯🇵'],
+  ['三得利|Suntory','🇯🇵'],['梅鹤|Umeshu','🇯🇵'],
+  // 法国（干邑/香槟/白兰地）
+  ['轩尼诗|Hennessy','🇫🇷'],['马爹利|Martell','🇫🇷'],['人头马|Remy Martin','🇫🇷'],
+  ['拿破仑|Courvoisier','🇫🇷'],['路易老爷|Louis Royer','🇫🇷'],['御鹿|Hine','🇫🇷'],
+  ['酩悦|Moet','🇫🇷'],['巴黎之花|Perrier-Jouet','🇫🇷'],['唐培里侬|Dom Perignon','🇫🇷'],
+  ['凯歌|Veuve Clicquot','🇫🇷'],['库克|Krug','🇫🇷'],['玛姆|Mumm','🇫🇷'],
+  ['白雪|Piper-Heidsieck','🇫🇷'],['堡林爵|Bollinger','🇫🇷'],['路易王妃|Louis Roederer','🇫🇷'],
+  ['瑞娜|Ruinart','🇫🇷'],['沙龙|Salon','🇫🇷'],
+  // 墨西哥
+  ['唐胡里奥|Don Julio','🇲🇽'],['818|詹娜818','🇲🇽'],['豪家|Herradura','🇲🇽'],
+  ['奥美加|Olmeca','🇲🇽'],['卡萨米戈|Casamigos','🇲🇽'],['科尔勒|Corralejo','🇲🇽'],
+  // 美国
+  ['占边|Jim Beam|金宾','🇺🇸'],['美格|Maker','🇺🇸'],['杰克丹尼|Jack Daniel','🇺🇸'],
+  ['四玫瑰|Four Roses','🇺🇸'],['活福|Wild Turkey','🇺🇸'],['微风|[^a-z]Eagle Rare','🇺🇸'],
+  ['凯斯|Knob Creek','🇺🇸'],['艾伯伦|Elijah Craig','🇺🇸'],
+  // 爱尔兰
+  ['尊美醇|Jameson','🇮🇪'],['知幕|Bushmills','🇮🇪'],
+  // 德国
+  ['爱士堡|Eichbaum','🇩🇪'],['唯森|Weissbier','🇩🇪'],['贝克|Beck','🇩🇪'],
+  ['奥丁格|Oettinger','🇩🇪'],['教士|Franziskaner','🇩🇪'],['唯森','🇩🇪'],
+  // 荷兰
+  ['喜力|Heineken','🇳🇱'],['波士|Bols','🇳🇱'],['帝塔仕|De Kuyper','🇳🇱'],
+  ['英捷|Inverhouse','🇳🇱'],
+  // 西班牙
+  ['桃乐丝|Torres','🇪🇸'],['艾帝达姆|Estrella','🇪🇸'],['菲斯奈特|Freixenet','🇪🇸'],
+  // 意大利
+  ['金巴利|Campari','🇮🇹'],['阿佩罗|Aperol','🇮🇹'],['马提尼|Martini','🇮🇹'],
+  ['希巴古|Cinzano','🇮🇹'],
+  // 澳大利亚
+  ['奔富|Penfolds','🇦🇺'],['御兰堡|Yalumba','🇦🇺'],
+  // 中国
+  ['穿岩|CHUANYAN','🇨🇳'],['茅台|Moutai','🇨🇳'],['五粮液','🇨🇳'],['泸州老窖','🇨🇳'],['汾酒','🇨🇳'],
+  // 其他饮料
+  ['芙丝|Voss','🇳🇴'],['泰象|Chang','🇹🇭'],['乐堡|Tuborg','🇩🇰'],['嘉士伯|Carlsberg','🇩🇰'],
+  ['福佳|Hoegaarden','🇧🇪'],['智美|Chimay','🇧🇪'],['督威|Duvel','🇧🇪'],['林德曼|Lindemans','🇧🇪'],
+  ['科罗娜|Corona','🇲🇽'],['青岛','🇨🇳'],['雪花','🇨🇳']
+];
 function autoFlag(zh, en){
   const t=(zh||'')+' '+(en||'');
   for(const [re,fg] of FLAG_RULES) if(re.test(t)) return fg;
+  for(const [pat,fg] of BRAND_FLAGS){ try{ if(new RegExp(pat,'i').test(t)) return fg; }catch(e){} }
   if(/Chablis|Bordeaux|Burgundy|Rhone|Champagne|Cognac|Provence/i.test(en||'')) return '🇫🇷';
   if(/Marlborough/i.test(en||'')) return '🇳🇿';
   if(/Napa|California/i.test(en||'')) return '🇺🇸';
