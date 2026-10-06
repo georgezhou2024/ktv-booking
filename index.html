@@ -603,7 +603,10 @@ const FLAG_SVG = {
   '🇰🇪':{c:'ke',s:"<circle r='20' fill='#000'/><path d='M0 6h40v8H0z' fill='#bb9e5d'/><path d='M0 26h40v8H0z' fill='#bb9e5d'/><path d='M0 14h40v12H0z' fill='#bb9e5d'/>"},
   '🇳🇬':{c:'ng',s:"<circle r='20' fill='#fff'/><path d='M0 0h13.3v40H0z' fill='#008751'/><path d='M26.7 0H40v40H26.7z' fill='#008751'/>"},
   '🇬🇭':{c:'gh',s:"<circle r='20' fill='#ce1126'/><path d='M0 13.3h40v13.3H0z' fill='#fcd116'/><path d='M0 26.7h40v13.3H0z' fill='#006b3f'/><circle cx='20' cy='20' r='3.4' fill='#000'/>"},
-  '🇫🇯':{c:'fj',s:"<circle r='20' fill='#69d4f9'/><path d='M0 0h16v20H0z' fill='#012169'/><path d='M0 4L16 16M16 4L0 16' stroke='#fff' stroke-width='2'/>"}
+  '🇫🇯':{c:'fj',s:"<circle r='20' fill='#69d4f9'/><path d='M0 0h16v20H0z' fill='#012169'/><path d='M0 4L16 16M16 4L0 16' stroke='#fff' stroke-width='2'/>"},
+  '🇵🇷':{c:'pr',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v10H0zM0 30h40v10H0z' fill='#ed0000'/><path d='M0 0l20 20L0 40z' fill='#0050f0'/><circle cx='9' cy='20' r='2.6' fill='#fff'/>"},
+  '🇹🇹':{c:'tt',s:"<circle r='20' fill='#fff'/><path d='M-4 8L32 36M8 -4L36 32' stroke='#d21034' stroke-width='10'/><path d='M-4 8L32 36M8 -4L36 32' stroke='#000' stroke-width='14' opacity='0'/>"},
+  '🇩🇴':{c:'do',s:"<circle r='20' fill='#fff'/><path d='M0 0h40v40H0z' fill='#fff'/><path d='M0 0h20v20H0zM20 20h20v20H20z' fill='#ce1126'/><path d='M20 0v40M0 20h40' stroke='#002d62' stroke-width='4'/>"}
 };
 function flagDataUri(emoji){
   const f=FLAG_SVG[emoji]; if(!f) return '';
@@ -661,7 +664,28 @@ const BRAND_FLAGS = [
   // 其他饮料
   ['芙丝|Voss','🇳🇴'],['泰象|Chang','🇹🇭'],['乐堡|Tuborg','🇩🇰'],['嘉士伯|Carlsberg','🇩🇰'],
   ['福佳|Hoegaarden','🇧🇪'],['智美|Chimay','🇧🇪'],['督威|Duvel','🇧🇪'],['林德曼|Lindemans','🇧🇪'],
-  ['科罗娜|Corona','🇲🇽'],['青岛','🇨🇳'],['雪花','🇨🇳']
+  ['科罗娜|Corona','🇲🇽'],['青岛','🇨🇳'],['雪花','🇨🇳'],
+  // —— 本菜单全部酒款补全 ——
+  ['培恩|Patrón|Patron','🇲🇽'],['克斯阿苏尔|Clase Azul','🇲🇽'],['秘曜|Codigo','🇲🇽'],
+  ['格兰格拉索|Glenglassaugh','🇬🇧'],['雪树|Belvedere','🇵🇱'],['绝对亦乐|Absolut Elyx','🇸🇪'],
+  ['Ketel One','🇳🇱'],['君度|Cointreau','🇫🇷'],['柑曼怡|Grand Marnier','🇫🇷'],
+  ['路萨朵|Luxardo','🇮🇹'],['安哥斯图娜|Angostura','🇹🇹'],['杜林标|Drambuie','🇬🇧'],
+  ['莱叶|LENNÉ','🇩🇪'],['贺兰山|Helan Mountain','🇨🇳'],['优尼特|Riunite','🇮🇹'],
+  ['莫兰|Moillard','🇫🇷'],['虔途|Church Road','🇳🇿'],['乐霏|Leflaive','🇫🇷'],
+  ['勒桦|Domaine Leroy','🇫🇷'],['雷格隐士|Hermitage Lescours','🇫🇷'],['堡歌|Burge Family','🇦🇺'],
+  ['格兰苏|Grand Sud','🇫🇷'],['吉诺|Barbanera','🇮🇹'],['大卫杜夫|Davidoff','🇩🇴'],
+  ['蒙特|Montecristo','🇨🇺'],['帕特加斯|Partagas','🇨🇺'],['胡安特级|Juan Especial','🇨🇺'],
+  ['金特罗|Quintero','🇨🇺'],['罗密欧|Romeo','🇨🇺'],['高希霸|Cohiba','🇨🇺'],
+  ['胜狮|Singha','🇹🇭'],['红牛|Red Bull','🇦🇹'],['佩思利|Peacely','🇻🇳'],
+  ['托马斯亨利|Thomas Henry','🇩🇪'],['阿佩罗|Aperol','🇮🇹'],['皮斯科|Pisco','🇵🇪'],
+  ['卡皮利亚|Caipirinha','🇧🇷'],['椰林飘香|Pina Colada|Piña','🇵🇷'],
+  ['南澳湾|South Bay','🇳🇿'],['云雾之湾|Cloudy Bay','🇳🇿'],['仙女湾|Fairy Bay','🇳🇿'],
+  ['布夏|Bouchard','🇫🇷'],['瑞恩|Régnard|Ryan Vineyard','🇫🇷'],['拉赫希|Laroche','🇫🇷'],
+  ['皮盖特|Piguet','🇫🇷'],['夏布利|Chablis','🇫🇷'],['勃艮第|Bourgogne|Burgundy','🇫🇷'],
+  ['博若|Beaujolais','🇫🇷'],['波尔多|Bordeaux','🇫🇷'],['澳宝|Opal Estate','🇦🇺'],
+  ['伦马克|Renmark','🇦🇺'],['宏图|Grand Tower','🇨🇱'],['约瑟|San Jose|Apalta','🇨🇱'],
+  ['里奥哈|Rioja','🇪🇸'],['逃牛岭|Runaway Cow','🇨🇳'],['爱丽舍|Elysée','🇫🇷'],
+  ['味巴赫|Weinbach','🇩🇪'],['哈姆酒庄|Weingut Haag','🇩🇪'],['梵花莱茵|Lufter Blume','🇩🇪']
 ];
 function autoFlag(zh, en){
   const t=(zh||'')+' '+(en||'');
