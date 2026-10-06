@@ -685,7 +685,8 @@ const BRAND_FLAGS = [
   ['博若|Beaujolais','🇫🇷'],['波尔多|Bordeaux','🇫🇷'],['澳宝|Opal Estate','🇦🇺'],
   ['伦马克|Renmark','🇦🇺'],['宏图|Grand Tower','🇨🇱'],['约瑟|San Jose|Apalta','🇨🇱'],
   ['里奥哈|Rioja','🇪🇸'],['逃牛岭|Runaway Cow','🇨🇳'],['爱丽舍|Elysée','🇫🇷'],
-  ['味巴赫|Weinbach','🇩🇪'],['哈姆酒庄|Weingut Haag','🇩🇪'],['梵花莱茵|Lufter Blume','🇩🇪']
+  ['味巴赫|Weinbach','🇩🇪'],['哈姆酒庄|Weingut Haag','🇩🇪'],['梵花莱茵|Lufter Blume','🇩🇪'],
+  ['Riesling|雷司令','🇩🇪'],['Grey Goose|灰雁','🇫🇷']
 ];
 function autoFlag(zh, en){
   const t=(zh||'')+' '+(en||'');
@@ -707,6 +708,7 @@ function decorateFlags(root, sk, catId){
   (root.querySelectorAll('.item .name')||[]).forEach(function(nameEl){
     if(nameEl.querySelector('.flag')) return;
     const zh = (nameEl.childNodes[0] && nameEl.childNodes[0].nodeType===3 ? nameEl.childNodes[0].textContent : nameEl.textContent).trim();
+    if(/^¥.*卡/.test(zh)) return; // 会员充值卡不出旗
     const en = (nameEl.querySelector('.en-name')||{}).textContent||'';
     const key = sk+'|'+catId+'|'+zh;
     let fg = FLAGS_SETTINGS.overrides[key];
