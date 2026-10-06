@@ -371,7 +371,7 @@ function renderWarnings(){
     collectItems(getCatHtml(sk,ref)).forEach(it=>{
       if(!it.priceText){ if(/会员|须知/.test(ref.label)) return; errs.push(`${ref.label}「${esc(it.zhName)}」没有价格，请填写或标注套餐内含`); return; }
       const p=E.parsePrice(it.priceText,ref.shisha?'shisha':ref.cat);
-      if(p.pairs.length===0&&!/套餐内含|赠送|—/.test(it.priceText))
+      if(p.pairs.length===0 && p.bundle.length===0 && !/套餐内含|赠送|—/.test(it.priceText))
         errs.push(`${ref.label}「${esc(it.zhName)}」价格格式异常（未识别出金额）：${esc(it.priceText)}`);
       const unit=p.pairs.find(x=>x.qty===1);
       p.bundle.forEach(b=>{ if(unit&&b.price>=unit.price*b.qty)
