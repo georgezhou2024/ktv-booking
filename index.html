@@ -732,12 +732,17 @@ const FLAG_WORDS=[
  [/Dominican/i,'🇩🇴'],[/Trinidad/i,'🇹🇹']
 ];
 async function lookupFlag(zh, en){
+  // 国内访问维基百科慢，已停用联网查询，全部走本地规则库
+  return '';
+  /*
   try{
     const cache=JSON.parse(localStorage.getItem('ph_flag_lookup')||'{}');
     const key=(zh||'')+'|'+(en||'');
     if(cache[key]!==undefined) return cache[key];
     const q=encodeURIComponent(en||zh||'');
-    const s=await (await fetch('https://en.wikipedia.org/w/api.php?action=opensearch&search='+q+'&limit=1&format=json&origin=*')).json();
+    const ctl=AbortController ? new AbortController() : null;
+    setTimeout(function(){ try{ctl&&ctl.abort()}catch(e){} }, 1500);
+    const s=await (await fetch('https://en.wikipedia.org/w/api.php?action=opensearch&search='+q+'&limit=1&format=json&origin=*',{signal:ctl&&ctl.signal})).json();
     let res='';
     if(s[1] && s[1][0]){
       const sum=await (await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(s[1][0])+'?origin=*')).json();
@@ -748,6 +753,7 @@ async function lookupFlag(zh, en){
     cache[key]=hit; localStorage.setItem('ph_flag_lookup', JSON.stringify(cache));
     return hit;
   }catch(e){ return ''; }
+  */
 }
 // 渲染分类后：给品名前面插国旗
 function decorateFlags(root, sk, catId){
