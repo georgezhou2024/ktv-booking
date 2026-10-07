@@ -217,7 +217,13 @@ function fillSelects(){
     toast('上传中…');
     try{
       const buf=await f.arrayBuffer();
-      const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+      const bytes=new Uint8Array(buf);
+      let bin='';
+      const CHUNK=0x8000;
+      for(let i=0;i<bytes.length;i+=CHUNK){
+        bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+CHUNK));
+      }
+      const b64=btoa(bin);
       const H={Authorization:'Bearer '+pat,Accept:'application/vnd.github+json','Content-Type':'application/json'};
       // 查现有 menu.pdf sha
       let oldSha=null;
