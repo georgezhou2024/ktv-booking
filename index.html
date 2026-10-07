@@ -509,6 +509,12 @@
 </div>
 
 <script>
+// Service Worker：二次打开秒开
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+<script>
 // WebP 全局兜底：任何 .webp 图片加载失败（老浏览器/文件缺失）自动回退同名 .jpg
 document.addEventListener('error', function(e){
   var t = e.target;
