@@ -252,7 +252,7 @@ function renderEdit(){
     card.querySelector('[act=del]').onclick=()=>onDelete(sk,ref,idx,card);
     card.querySelector('[act=fgsave]').onclick=()=>{
       const sel=card.querySelector('.ic-flag');
-      setFlagOverride(card.dataset.fgKey, sel.value);
+      setFlagOverride(card.dataset.fgkey, sel.value);
       const btn=card.querySelector('[act=fgsave]');
       const old=btn.textContent; btn.textContent='已保存'; btn.disabled=true;
       setTimeout(()=>{btn.textContent=old; btn.disabled=false;},1200);
