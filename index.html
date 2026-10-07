@@ -203,10 +203,11 @@
         .flag {
             display: inline-block;
             margin-right: 7px;
-            width: 15px;
-            height: 15px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            vertical-align: -2px;
+            vertical-align: -3px;
+            object-fit: cover;
         }
         .menu-grid {
             display: grid;
@@ -617,8 +618,7 @@ const FLAG_SVG = {
 };
 function flagDataUri(emoji){
   const f=FLAG_SVG[emoji]; if(!f) return '';
-  const svg=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'>${f.s}</svg>`;
-  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+  return 'flags/'+f.c+'.svg';
 }
 // 品牌知识库：常见酒水/饮料品牌 → 国家（顺序：具体品牌在前）
 const BRAND_FLAGS = [
