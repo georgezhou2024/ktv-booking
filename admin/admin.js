@@ -304,7 +304,7 @@ function onToggleSold(sk,ref,idx){
   renderEdit();
   renderStage();
 }
-function onSave(sk,ref,idx,card){
+async function onSave(sk,ref,idx,card){
   const it=collectItems(getCatHtml(sk,ref))[idx];
   const zh=card.querySelector('.ef-zh').value.trim();
   const en=card.querySelector('.ef-en').value.trim();
@@ -314,7 +314,6 @@ function onSave(sk,ref,idx,card){
   applyMutation(sk,ref,`${ref.label}：${it.zhName} → ${zh}${price?' / '+price:''}`,'change',html=>{
     const span=itemSpan(html,idx); if(!span) return html;
     let item=html.slice(span[0],span[1]);
-    // 用 div 配平定位完整 .name，避免 sub-text 的 </div> 截断
     const ns=elementSpan(item,'name');
     if(ns) item=item.slice(0,ns[0])+buildNameHtml(zh,en,sub,it)+item.slice(ns[1]);
     if(price!==it.priceText){
@@ -325,7 +324,42 @@ function onSave(sk,ref,idx,card){
     }
     return html.slice(0,span[0])+item+html.slice(span[1]);
   });
-  toast('已加入待发布');
+  // 跨店同步：把同一品名在其他门店的同款一起改
+  const oldZh=it.zhName;
+  const syncCount=syncToOtherStores(oldZh,zh,en,sub,price,sk);
+  toast(syncCount>0?`已保存，并同步到 ${syncCount} 家其他门店同款`:'已加入待发布');
+  renderEdit(); renderStage();
+}
+// 在所有其他门店里找同名单品，套用新的英文/备注/价格
+function syncToOtherStores(oldZh,newZh,en,sub,price,skipStore){
+  let n=0;
+  for(const otherSk of Object.keys(DATA.stores)){
+    if(otherSk===skipStore) continue;
+    const s=DATA.stores[otherSk]; if(!s||!s.content) continue;
+    for(const catKey of Object.keys(s.content)){
+      const html=s.content[catKey];
+      const items=collectItems(html);
+      items.forEach((oi,i)=>{
+        if(!oi || oi.zhName!==oldZh) return;
+        const ref={key:catKey,label:(s.categories||[]).find(c=>c.id===catKey)?.name||catKey,cat:catKey};
+        applyMutation(otherSk, ref, `${s.name}：${oldZh} 同步改价/改名`,'change',h=>{
+          const span=itemSpan(h,i); if(!span) return h;
+          let item=h.slice(span[0],span[1]);
+          const ns=elementSpan(item,'name');
+          if(ns) item=item.slice(0,ns[0])+buildNameHtml(newZh,en,sub,oi)+item.slice(ns[1]);
+          if(price!==oi.priceText){
+            if(/<div\b[^>]*class="[^"]*\bprice\b[^"]*"[^>]*>/.test(item))
+              item=item.replace(/(<div\b[^>]*class="[^"]*\bprice\b[^"]*"[^>]*>)[\s\S]*?(<\/div>)/,`$1${esc(price)}$2`);
+            else
+              item=item.slice(0,item.lastIndexOf('</div>'))+`<div class="price">${esc(price)}</div></div>`;
+          }
+          return h.slice(0,span[0])+item+h.slice(span[1]);
+        });
+        n++;
+      });
+    }
+  }
+  return n;
 }
 async function onDelete(sk,ref,idx,card){
   const it=collectItems(getCatHtml(sk,ref))[idx];
