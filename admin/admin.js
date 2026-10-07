@@ -236,6 +236,7 @@ function renderEdit(){
       const sp=itemSpan(refHtml,idx);
       const itHtml=sp?refHtml.slice(sp[0],sp[1]):'';
       const isSold=/class="item[^"]*\bsold-out\b/.test(itHtml);
+      const isRec=/class="item[^"]*\bis-rec\b/.test(itHtml);
       const fgKey=sk+'|'+ref.key+'|'+it.zhName;
       const fgVal=DATA.flags.overrides[fgKey]!==undefined?DATA.flags.overrides[fgKey]:'';
       const fgOpts=[['','自动'],['hide','隐藏'],['🇫🇷','法国'],['🇨🇱','智利'],['🇳🇿','新西兰'],['🇮🇹','意大利'],['🇪🇸','西班牙'],['🇦🇺','澳大利亚'],['🇺🇸','美国'],['🇩🇪','德国'],['🇬🇧','英国/苏格兰'],['🇯🇵','日本'],['🇲🇽','墨西哥'],['🇨🇦','加拿大'],['🇦🇷','阿根廷'],['🇿🇦','南非'],['🇵🇹','葡萄牙'],['🇨🇳','中国']]
@@ -244,7 +245,7 @@ function renderEdit(){
         <div class="ic-name">${esc(it.zhName)}${it.enRaw?`<span class="ic-en">${esc(it.enRaw)}</span>`:''}</div>
         ${it.subText?`<div class="ic-sub">${esc(it.subText)}</div>`:''}
         <div class="ic-price">${esc(it.priceText)||'<span style="color:var(--mut)">（无价格）</span>'}${isSold?' <span class="ic-soldtag">售尽</span>':''}</div>
-        <div class="ic-actions"><select class="ic-flag" title="国旗">${fgOpts}</select><button act="fgsave" class="fgsave">保存</button><button act="edit">改价 / 改名</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
+        <div class="ic-actions"><select class="ic-flag" title="国旗">${fgOpts}</select><button act="fgsave" class="fgsave">保存</button><button act="edit">改价 / 改名</button><button act="rec" class="${isRec?'on':''}">${isRec?'取消推荐':'推荐'}</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
         <div class="edit-form">
           <input class="ef-zh" value="${esc(it.zhName)}" placeholder="中文名">
           <input class="ef-en" value="${esc(it.enRaw)}" placeholder="英文名（可留空）">
@@ -263,6 +264,7 @@ function renderEdit(){
     card.querySelector('.ef-cancel').onclick=()=>{ card.querySelector('.edit-form').classList.remove('on'); };
     card.querySelector('.ef-save').onclick=()=>onSave(sk,ref,idx,card);
     card.querySelector('[act=sold]').onclick=()=>onToggleSold(sk,ref,idx);
+    card.querySelector('[act=rec]').onclick=()=>onToggleRec(sk,ref,idx);
     card.querySelector('[act=del]').onclick=()=>onDelete(sk,ref,idx,card);
     card.querySelector('[act=fgsave]').onclick=()=>{
       const sel=card.querySelector('.ic-flag');
@@ -298,6 +300,28 @@ function onToggleSold(sk,ref,idx){
     return html.slice(0,span[0])+item+html.slice(span[1]);
   });
   toast(wasSold?'已恢复：菜单恢复正常':'已沽清：菜单显示「售尽」');
+  renderEdit();
+  renderStage();
+}
+function onToggleRec(sk,ref,idx){
+  const it=collectItems(getCatHtml(sk,ref))[idx];
+  const refHtml=getCatHtml(sk,ref);
+  const sp=itemSpan(refHtml,idx);
+  const wasRec=/class="item[^"]*\bis-rec\b/.test(sp?refHtml.slice(sp[0],sp[1]):'');
+  applyMutation(sk,ref,`${ref.label}：${it.zhName} ${wasRec?'取消推荐':'设为推荐'}`,'change',html=>{
+    const span=itemSpan(html,idx); if(!span) return html;
+    let item=html.slice(span[0],span[1]);
+    if(wasRec){
+      item=item.replace(/ class="item is-rec"/,' class="item"').replace(/\s*<span class="rec-badge">★推荐<\/span>/,'');
+    }else{
+      item=item.replace(/<div class="item"/,'<div class="item is-rec"');
+      if(!/is-rec/.test(item)) item=item.replace(/<div\b([^>]*)class="item"/,'<div$1class="item is-rec"');
+      if(!/<span class="rec-badge">/.test(item))
+        item=item.replace(/(<div\b[^>]*class="[^"]*\bprice\b[^>]*"[^>]*>[\s\S]*?<\/div>)/,'$1<span class="rec-badge">★推荐</span>');
+    }
+    return html.slice(0,span[0])+item+html.slice(span[1]);
+  });
+  toast(wasRec?'已取消推荐':'已设为推荐：菜单显示「★推荐」');
   renderEdit();
   renderStage();
 }
