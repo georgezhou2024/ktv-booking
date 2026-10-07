@@ -496,6 +496,10 @@
         <p class="page-subtitle" id="store-subtitle">Meet me at Acme — Drink List</p>
         <div class="divider-line"></div>
 
+        <div style="text-align:center;margin-bottom:14px">
+          <button id="btn-pdf-menu" style="background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;border:0;border-radius:9px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:1px">📄 PDF 原版菜单</button>
+        </div>
+
         <div class="menu-grid" id="menu-tabs">
             <!-- JS动态生成分类按钮 -->
         </div>
@@ -995,6 +999,34 @@ function backToShisha() {
     document.getElementById('sh-list').style.display = 'block';
     window.scrollTo(0, 0);
 }
+// PDF 原版菜单：全屏 iframe，带缓存参数
+(function(){
+    var overlay=document.createElement('div');
+    overlay.id='pdf-overlay';
+    overlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column';
+    overlay.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1a1410;color:#f0e6d8">'
+        +'<span style="font-size:14px;font-weight:600">📄 PDF 原版菜单</span>'
+        +'<button id="pdf-close" style="background:#b3242a;color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px">关闭 ✕</button>'
+        +'</div>'
+        +'<iframe id="pdf-frame" style="flex:1;width:100%;border:0;background:#fff"></iframe>';
+    document.body.appendChild(overlay);
+    var loaded=false;
+    document.getElementById('btn-pdf-menu').onclick=function(){
+        overlay.style.display='flex';
+        if(!loaded){
+            // 预加载 + 缓存版本号
+            var v=document.getElementById('store-title')?location.search.split('v=')[1]||'1':'1';
+            document.getElementById('pdf-frame').src='menu.pdf?v='+v;
+            loaded=true;
+        }
+    };
+    document.getElementById('pdf-close').onclick=function(){ overlay.style.display='none'; };
+    overlay.onclick=function(e){ if(e.target===overlay) overlay.style.display='none'; };
+    // 后台预加载 PDF（空闲时）
+    window.addEventListener('load',function(){
+        setTimeout(function(){ var l=document.createElement('link'); l.rel='prefetch'; l.href='menu.pdf'; document.head.appendChild(l); },3000);
+    });
+})();
 </script>
 </body>
 </html>
