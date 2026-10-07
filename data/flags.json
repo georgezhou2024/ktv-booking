@@ -1,7 +1,7 @@
 {
   "hideAll": false,
   "overrides": {
-    "acme|whisky|格兰路思15 年": "🇫🇷",
+    "acme|whisky|格兰路思15 年": "🇬🇧",
     "store1|cat1|海勒姆长相思白葡萄酒": "🇳🇿",
     "store1|cat1|酩颂酒庄干白": "🇫🇷",
     "store1|cat11|杏仁酸": "hide",
@@ -18,6 +18,15 @@
     "store1|cat11|大吉利": "hide",
     "store1|cat11|曼哈顿": "hide",
     "store1|cat11|卡皮利亚": "hide",
-    "store1|cat2|星晨酩颂干红": "🇫🇷"
+    "store1|cat2|星晨酩颂干红": "🇫🇷",
+    "acme|cocktail|干马提尼": "hide",
+    "acme|cigar|长城_GL3号": "🇨🇳",
+    "acme|cigar|长城_132秘制": "🇨🇳",
+    "acme|cigar|长城_132记忆": "🇨🇳",
+    "acme|cigar|长城_132迷你3号（5支装）": "🇨🇳",
+    "acme|cigar|长城_胜利": "🇨🇳",
+    "acme|cigar|将军_战神4号": "🇨🇳",
+    "acme|cigar|将军_战神荣耀（10支装）": "🇨🇳",
+    "acme|cigar|王冠_蓝色假日": "🇨🇳"
   }
 }
