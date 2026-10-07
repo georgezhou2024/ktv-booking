@@ -1004,7 +1004,7 @@ function backToShisha() {
     document.getElementById('sh-list').style.display = 'block';
     window.scrollTo(0, 0);
 }
-// PDF 原版菜单：全屏 iframe
+// PDF 原版菜单：用 PDF.js 渲染成图片（手机/电脑都能直接看，不弹下载）
 var pdfOverlay=document.createElement('div');
 pdfOverlay.id='pdf-overlay';
 pdfOverlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column';
@@ -1012,14 +1012,44 @@ pdfOverlay.innerHTML='<div style="display:flex;justify-content:space-between;ali
     +'<span style="font-size:14px;font-weight:600">📄 菜单</span>'
     +'<button id="pdf-close" style="background:#b3242a;color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px">关闭 ✕</button>'
     +'</div>'
-    +'<iframe id="pdf-frame" style="flex:1;width:100%;border:0;background:#fff"></iframe>';
+    +'<div id="pdf-scroll" style="flex:1;overflow:auto;background:#222;text-align:center"><div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">加载中…</div></div>';
 document.body.appendChild(pdfOverlay);
-function openPdfOverlay(src){
+var pdfjsLib=null;
+async function openPdfOverlay(src){
     pdfOverlay.style.display='flex';
-    document.getElementById('pdf-frame').src=src+(src.includes('?')?'&':'?')+'v='+(window.VER||Date.now());
+    var st=document.getElementById('pdf-status');
+    var sc=document.getElementById('pdf-scroll');
+    sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">PDF.js 加载中…</div>';
+    try{
+        if(!pdfjsLib){
+            await new Promise((res,rej)=>{
+                var s=document.createElement('script');
+                s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                s.onload=res; s.onerror=rej; document.head.appendChild(s);
+            });
+            pdfjsLib=window.pdfjsLib;
+            pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">解析 PDF 中…</div>';
+        var resp=await fetch(src+(src.includes('?')?'&':'?')+'v='+(window.VER||Date.now()));
+        var buf=await resp.arrayBuffer();
+        var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        sc.innerHTML='';
+        for(var p=1;p<=pdf.numPages;p++){
+            var page=await pdf.getPage(p);
+            var vp=page.getViewport({scale:2});
+            var cv=document.createElement('canvas');
+            cv.width=vp.width; cv.height=vp.height;
+            cv.style.cssText='max-width:100%;height:auto;display:block;margin:0 auto 4px;box-shadow:0 2px 10px rgba(0,0,0,.5)';
+            await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+            sc.appendChild(cv);
+        }
+    }catch(e){
+        sc.innerHTML='<div style="color:#e08a8d;padding:40px;font-size:13px">PDF 加载失败：'+(e.message||e)+'</div>';
+    }
 }
-document.getElementById('pdf-close').onclick=function(){ pdfOverlay.style.display='none'; document.getElementById('pdf-frame').src='about:blank'; };
-pdfOverlay.onclick=function(e){ if(e.target===pdfOverlay){ pdfOverlay.style.display='none'; document.getElementById('pdf-frame').src='about:blank'; } };
+document.getElementById('pdf-close').onclick=function(){ pdfOverlay.style.display='none'; document.getElementById('pdf-scroll').innerHTML=''; };
+pdfOverlay.onclick=function(e){ if(e.target===pdfOverlay){ pdfOverlay.style.display='none'; document.getElementById('pdf-scroll').innerHTML=''; } };
 var btnPdf=document.getElementById('btn-pdf-menu');
 if(btnPdf) btnPdf.onclick=function(){ openPdfOverlay('menu.pdf'); };
 </script>
