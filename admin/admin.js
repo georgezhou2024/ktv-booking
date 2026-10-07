@@ -208,6 +208,27 @@ function fillSelects(){
   $('#ed-q').oninput=()=>renderEdit();
   $('#btn-add').onclick=onAdd;
   initBulkModal();
+  // 上传原版 PDF 菜单
+  $('#btn-upload-pdf').onclick=()=>$('#pdf-menu-file').click();
+  $('#pdf-menu-file').onchange=async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    if(!confirm('将上传 '+f.name+'（'+(f.size/1024/1024).toFixed(1)+'MB）作为新版 PDF 菜单，覆盖线上 menu.pdf？')) return;
+    const pat=prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
+    toast('上传中…');
+    try{
+      const buf=await f.arrayBuffer();
+      const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+      const H={Authorization:'Bearer '+pat,Accept:'application/vnd.github+json','Content-Type':'application/json'};
+      // 查现有 menu.pdf sha
+      let oldSha=null;
+      try{ const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/menu.pdf',{headers:H}); if(r.ok) oldSha=(await r.json()).sha; }catch{}
+      const body={message:'update menu.pdf '+new Date().toISOString(),content:b64};
+      if(oldSha) body.sha=oldSha;
+      const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/menu.pdf',{method:'PUT',headers:H,body:JSON.stringify(body)});
+      if(!r.ok){ const t=await r.text(); throw new Error(t.slice(0,200)); }
+      toast('✅ 已上传，前台点「PDF 原版菜单」即可看到');
+    }catch(err){ alert('上传失败：'+err.message); }
+  };
 }
 
 // ---------- 批量添加 ----------
@@ -700,8 +721,23 @@ function upscaleForOcr(src){
   return c;
 }
 // 复用单个 tesseract worker 识别多张高清 canvas（中英文，多方案按置信度择优）
+async function ocrWithTimeout(worker,img,ms=45000){
+  return Promise.race([
+    worker.recognize(img),
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('OCR超时(45s)')),ms))
+  ]);
+}
 async function ocrCanvases(canvases,onProgress,onPhase){
   if(!pdfLibs.tess){ await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'); pdfLibs.tess=true; }
+  // 限制最大边长，避免超大图卡死
+  canvases=canvases.map(c=>{
+    const max=Math.max(c.width,c.height);
+    if(max<=2000) return c;
+    const sc=2000/max;
+    const cv=document.createElement('canvas'); cv.width=c.width*sc; cv.height=c.height*sc;
+    cv.getContext('2d').drawImage(c,0,0,cv.width,cv.height);
+    return cv;
+  });
   const worker=await Tesseract.createWorker(['chi_sim','eng'],1,{logger:m=>{
     if(m.status==='recognizing text'&&onProgress) onProgress(m.progress);
   }});
@@ -710,25 +746,21 @@ async function ocrCanvases(canvases,onProgress,onPhase){
   try{
     for(let ci=0;ci<canvases.length;ci++){
       const raw=canvases[ci];
-      // 方案 A：灰度+反色+自动对比度
       const vA=preprocessForOcr(raw);
       if(onPhase) onPhase(ci+1,canvases.length,'标准增强');
-      let best=await worker.recognize(vA);
-      // 置信度不足 → 方案 B：自适应局部二值化（深色底/花纹底）
+      let best;
+      try{ best=await ocrWithTimeout(worker,vA); }catch(e){ if(onPhase) onPhase(ci+1,canvases.length,'标准增强超时，跳过重试'); continue; }
       if(!best.data.confidence || best.data.confidence<72){
         if(onPhase) onPhase(ci+1,canvases.length,'局部二值化复核');
         const vB=adaptiveBinarize(raw);
         await worker.setParameters({tessedit_pageseg_mode:'6'});
-        const rB=await worker.recognize(vB);
-        if((rB.data.confidence||0)>(best.data.confidence||0)) best=rB;
+        try{ const rB=await ocrWithTimeout(worker,vB,30000); if((rB.data.confidence||0)>(best.data.confidence||0)) best=rB; }catch{}
       }
-      // 仍低 → 方案 C：锐化 + PSM4 版面复核
       if(!best.data.confidence || best.data.confidence<60){
         if(onPhase) onPhase(ci+1,canvases.length,'锐化复核');
         const vC=sharpenCanvas(vA);
         await worker.setParameters({tessedit_pageseg_mode:'4'});
-        const rC=await worker.recognize(vC);
-        if((rC.data.confidence||0)>(best.data.confidence||0)) best=rC;
+        try{ const rC=await ocrWithTimeout(worker,vC,30000); if((rC.data.confidence||0)>(best.data.confidence||0)) best=rC; }catch{}
       }
       await worker.setParameters({tessedit_pageseg_mode:'6'});
       text+='\n'+cleanOcrText(best.data.text);
