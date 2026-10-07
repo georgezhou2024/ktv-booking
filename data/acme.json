@@ -46,7 +46,8 @@
     },
     {
       "id": "notice",
-      "name": "酒水寄存须知"
+      "name": "酒水寄存须知",
+      "hidden": true
     },
     {
       "id": "cat12",
