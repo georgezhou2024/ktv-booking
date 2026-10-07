@@ -138,6 +138,15 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
 .cat-chip .cc-hide,.cat-chip .cc-del{background:none;border:none;color:var(--gold2);cursor:pointer;font-size:11px;margin-left:4px;padding:0 2px;}
 .cat-chip .cc-del{color:var(--red);}
 .ic-actions button.on{background:var(--red);color:#fff;border-color:var(--red);}
+/* 风格化确认弹窗 */
+.cfm-mask{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.cfm-box{width:380px;max-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.cfm-msg{color:var(--txt);font-size:14px;line-height:1.7;}
+.cfm-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.cfm-btns button{border-radius:8px;padding:9px 22px;font-size:13px;cursor:pointer;}
+.cfm-no{background:transparent;border:1px solid var(--line);color:var(--mut);}
+.cfm-yes{background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;border:0;font-weight:700;}
+.cfm-yes.danger{background:linear-gradient(135deg,#c0392b,#8e2420);color:#fff;}
 .item-card.is-sold{opacity:.7;}
 .ic-soldtag{color:#fff;background:var(--red);border-radius:8px;padding:1px 7px;font-size:10px;margin-left:6px;}
 .sr-addcat{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
@@ -283,6 +292,6 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
   </div>
 </div>
 
-<script type="module" src="admin.js?v=20261007c"></script>
+<script type="module" src="admin.js?v=20261007d"></script>
 </body>
 </html>

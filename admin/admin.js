@@ -5,6 +5,23 @@ import * as PDFR from './pdf.js';
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// 风格化确认弹窗（替代浏览器原生 confirm）
+function askConfirm(msg,{danger=false}={}){
+  return new Promise(res=>{
+    const m=document.createElement('div');
+    m.className='cfm-mask';
+    m.innerHTML=`<div class="cfm-box">
+      <div class="cfm-msg">${esc(msg).replace(/\n/g,'<br>')}</div>
+      <div class="cfm-btns">
+        <button class="cfm-no">取消</button>
+        <button class="cfm-yes ${danger?'danger':''}">确 定</button>
+      </div></div>`;
+    document.body.appendChild(m);
+    m.querySelector('.cfm-yes').onclick=()=>{m.remove();res(true);};
+    m.querySelector('.cfm-no').onclick=()=>{m.remove();res(false);};
+    m.addEventListener('click',e=>{if(e.target===m){m.remove();res(false);}});
+  });
+}
 let STORE_KEYS=E.STORE_KEYS.slice(); // 启动后由 data/stores.json 动态覆盖
 const CFG_KEY='ph_admin_cfg_v1';
 const SESS_KEY='ph_admin_session';
@@ -310,9 +327,9 @@ function onSave(sk,ref,idx,card){
   });
   toast('已加入待发布');
 }
-function onDelete(sk,ref,idx,card){
+async function onDelete(sk,ref,idx,card){
   const it=collectItems(getCatHtml(sk,ref))[idx];
-  if(!confirm(`确认下架删除「${it.zhName}」？\n该操作先进入待发布，推送后才会线上生效。`)) return;
+  if(!await askConfirm(`确认下架删除「${it.zhName}」？\n该操作先进入待发布，推送后才会线上生效。`,{danger:true})) return;
   applyMutation(sk,ref,`${ref.label}：下架 ${it.zhName}`,'del',html=>{
     const span=itemSpan(html,idx); if(!span) return html;
     return html.slice(0,span[0])+html.slice(span[1]);
@@ -345,8 +362,10 @@ function renderStage(){
   $('#btn-discard-m').style.display=n?'inline-block':'none';
   $('#push-info').innerHTML=n?`<b>${n}</b> 项改动待发布（${dirtyFiles().map(f=>f.replace('data/','').replace('.json','')).join('、')}）`:'暂无改动';
   let html=stages.map((s,i)=>{
-    const tag={change:'改价/改名',add:'新增',del:'下架',rollback:'回滚'}[s.tag]||s.tag;
-    return `<div class="stage-item"><span class="st-tag ${s.tag}">${tag}</span><span class="st-body">${esc(s.desc||s.path)}</span><button class="st-undo" data-i="${i}">撤销</button></div>`;
+    const tagMap={change:'改价/改名',add:'新增',del:'下架',rollback:'回滚',cat:'分类'};
+    const tag=tagMap[s.tag]||s.tag||'修改';
+    const tagCls=s.tag||'change';
+    return `<div class="stage-item"><span class="st-tag ${tagCls}">${tag}</span><span class="st-body">${esc(s.desc||s.path)}</span><button class="st-undo" data-i="${i}">撤销</button></div>`;
   }).join('');
   $('#stage-list').innerHTML=html||'<div class="empty-tip">暂无改动，去「搜索改价」或「PDF 对账」开始吧</div>';
   $$('#stage-list .st-undo').forEach(b=>b.onclick=()=>undoStage(+b.dataset.i));
@@ -376,8 +395,8 @@ $('#fg-hide-all').onchange=e=>{
   stages.push({kind:'file',path:'data/flags.json',beforeObj:before,afterObj:DATA.flags,desc:e.target.checked?'总开关：隐藏所有门店国旗':'总开关：恢复显示国旗'});
   refreshAll();
 };
-function discardAll(){
-  if(!confirm('放弃全部改动并还原菜单？')) return;
+async function discardAll(){
+  if(!await askConfirm('放弃全部改动并还原菜单？',{danger:true})) return;
   // 从后向前还原
   for(let i=stages.length-1;i>=0;i--){ const s=stages[i]; if(s.kind==='cat') setCatHtml(s.store,findRef(s.store,s.refKey),s.before); else restoreFileObj(s); }
   stages=[]; fillSelects(); refreshAll(); renderStores(); toast('已全部还原');
@@ -858,7 +877,7 @@ async function renderHistory(){
   }
 }
 async function rollback(sha){
-  if(!confirm('将把菜单数据文件（含门店清单）恢复到该版本并放入待发布（不会立即上线，推送后才生效）。继续？')) return;
+  if(!await askConfirm('将把菜单数据文件（含门店清单）恢复到该版本并放入待发布（不会立即上线，推送后才生效）。继续？')) return;
   try{
     const files=['stores','acme','phroom','eros','sensory','shisha'];
     for(const f of files){
@@ -900,7 +919,7 @@ $('#btn-push').onclick=pushAll;
 async function pushAll(){
   if(!cfg.pat){ toast('请点右上角「令牌设置」填入 GitHub 令牌后再推送',3000); return; }
   if(hasBlockingError()){ toast('存在必须修正的问题，请先处理'); return; }
-  if(!confirm(`确认推送 ${stages.length} 项改动到线上？\n推送后约 1 分钟自动上线。`)) return;
+  if(!await askConfirm(`确认推送 ${stages.length} 项改动到线上？\n推送后约 1 分钟自动上线。`)) return;
   const btn=$('#btn-push'); btn.disabled=true; btn.textContent='推送中…';
   try{
     const files=dirtyFiles();
@@ -976,7 +995,7 @@ document.addEventListener('click',e=>{
 });
 async function deploySystem(){
   if(!cfg.pat){ toast('请点右上角「令牌设置」填入 GitHub 令牌',3000); return; }
-  if(!confirm('将把后台程序（admin 5 个文件）、菜单首页和 5 个数据文件同步到线上，继续？')) return;
+  if(!await askConfirm('将把后台程序（admin 5 个文件）、菜单首页和 5 个数据文件同步到线上，继续？')) return;
   const log=document.querySelector('#deploy-log'); const btn=deployBtn();
   btn.disabled=true;
   const today=new Date(Date.now()+8*3600*1000).toISOString().slice(0,10);
@@ -1084,10 +1103,10 @@ function toggleHideStore(sk){
   syncStoreKeys(); fillSelects(); renderStores(); renderStage();
   toast(hiding?'已隐藏，推送后生效；随时可恢复':'已恢复显示，推送后生效');
 }
-function deleteStore(sk){
+async function deleteStore(sk){
   const d=DATA.stores[sk]; if(!d){ toast('门店数据不存在'); return; }
   const name=d.name;
-  if(!confirm(`确认彻底删除「${name}」？\n\n将从门店清单移除并删除其数据文件，推送后菜单和比价都不再出现。\n删除前先进入待发布，推送前仍可整组撤销。`)) return;
+  if(!await askConfirm(`确认彻底删除「${name}」？\n\n将从门店清单移除并删除其数据文件，推送后菜单和比价都不再出现。\n删除前先进入待发布，推送前仍可整组撤销。`,{danger:true})) return;
   const manifestBefore=JSON.parse(JSON.stringify(DATA.storesList));
   const fileBefore=JSON.parse(JSON.stringify(d));
   DATA.storesList.splice(0,DATA.storesList.length,...DATA.storesList.filter(x=>x.key!==sk));
@@ -1150,10 +1169,10 @@ function toggleHideCat(sk,catId){
   fillSelects(); renderStores(); renderStage();
   toast(c.hidden?'分类已隐藏（菜单不显示，数据保留）':'分类已恢复显示');
 }
-function deleteCategory(sk,catId){
+async function deleteCategory(sk,catId){
   const d=DATA.stores[sk]; const c=d.categories.find(x=>x.id===catId); if(!c) return;
   const n=(d.content[catId]||'').match(/class="[^"]*\bitem\b/g)||[];
-  if(!confirm(`确认彻底删除分类「${c.name}」及其 ${n.length} 个单品？\n先进入待发布，推送后线上生效，可在待发布撤销。`)) return;
+  if(!await askConfirm(`确认彻底删除分类「${c.name}」及其 ${n.length} 个单品？\n先进入待发布，推送后线上生效，可在待发布撤销。`,{danger:true})) return;
   const before=JSON.parse(JSON.stringify(d));
   d.categories=d.categories.filter(x=>x.id!==catId); delete d.content[catId];
   const after=JSON.parse(JSON.stringify(d));
