@@ -1,5 +1,8 @@
 {
   "acme": {
     "cat12": "pdfs/acme_cat12.pdf"
+  },
+  "phroom": {
+    "cat14": "pdfs/phroom_cat14.pdf"
   }
 }
