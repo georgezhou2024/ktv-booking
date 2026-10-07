@@ -213,7 +213,7 @@ function fillSelects(){
   $('#pdf-menu-file').onchange=async e=>{
     const f=e.target.files[0]; if(!f) return;
     if(!confirm('将上传 '+f.name+'（'+(f.size/1024/1024).toFixed(1)+'MB）作为新版 PDF 菜单，覆盖线上 menu.pdf？')) return;
-    const pat=prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
+    const pat=cfg.token||prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
     toast('上传中…');
     try{
       const buf=await f.arrayBuffer();
