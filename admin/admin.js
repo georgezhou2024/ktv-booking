@@ -230,7 +230,7 @@ function renderEdit(){
         <div class="ic-name">${esc(it.zhName)}${it.enRaw?`<span class="ic-en">${esc(it.enRaw)}</span>`:''}</div>
         ${it.subText?`<div class="ic-sub">${esc(it.subText)}</div>`:''}
         <div class="ic-price">${esc(it.priceText)||'<span style="color:var(--mut)">（无价格）</span>'}${isSold?' <span class="ic-soldtag">售尽</span>':''}</div>
-        <div class="ic-actions"><select class="ic-flag" title="国旗">${fgOpts}</select><button act="edit">改价 / 改名</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
+        <div class="ic-actions"><select class="ic-flag" title="国旗">${fgOpts}</select><button act="fgsave" class="fgsave">保存</button><button act="edit">改价 / 改名</button><button act="sold" class="${isSold?'on':''}">${isSold?'恢复沽清':'沽清'}</button><button act="del" class="del">下架删除</button></div>
         <div class="edit-form">
           <input class="ef-zh" value="${esc(it.zhName)}" placeholder="中文名">
           <input class="ef-en" value="${esc(it.enRaw)}" placeholder="英文名（可留空）">
@@ -250,7 +250,13 @@ function renderEdit(){
     card.querySelector('.ef-save').onclick=()=>onSave(sk,ref,idx,card);
     card.querySelector('[act=sold]').onclick=()=>onToggleSold(sk,ref,idx);
     card.querySelector('[act=del]').onclick=()=>onDelete(sk,ref,idx,card);
-    card.querySelector('.ic-flag').onchange=e=>setFlagOverride(card.dataset.fgKey,e.target.value,card);
+    card.querySelector('[act=fgsave]').onclick=()=>{
+      const sel=card.querySelector('.ic-flag');
+      setFlagOverride(card.dataset.fgKey, sel.value, card);
+      const btn=card.querySelector('[act=fgsave]');
+      const old=btn.textContent; btn.textContent='已保存'; btn.disabled=true;
+      setTimeout(()=>{btn.textContent=old; btn.disabled=false;},1200);
+    };
   });
 }
 function setFlagOverride(key,val,card){
