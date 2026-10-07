@@ -252,19 +252,19 @@ function renderEdit(){
     card.querySelector('[act=del]').onclick=()=>onDelete(sk,ref,idx,card);
     card.querySelector('[act=fgsave]').onclick=()=>{
       const sel=card.querySelector('.ic-flag');
-      setFlagOverride(card.dataset.fgKey, sel.value, card);
+      setFlagOverride(card.dataset.fgKey, sel.value);
       const btn=card.querySelector('[act=fgsave]');
       const old=btn.textContent; btn.textContent='已保存'; btn.disabled=true;
       setTimeout(()=>{btn.textContent=old; btn.disabled=false;},1200);
     };
   });
 }
-function setFlagOverride(key,val,card){
+function setFlagOverride(key,val){
   const before=JSON.parse(JSON.stringify(DATA.flags));
   if(val==='') delete DATA.flags.overrides[key];
   else DATA.flags.overrides[key]=val;
   stages.push({kind:'file',path:'data/flags.json',beforeObj:before,afterObj:DATA.flags,desc:`国旗：${key.split('|').pop()} → ${val||'自动'}`});
-  refreshAll();
+  renderStage();
 }
 function onToggleSold(sk,ref,idx){
   const it=collectItems(getCatHtml(sk,ref))[idx];
