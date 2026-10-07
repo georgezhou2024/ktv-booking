@@ -6,7 +6,7 @@
     "store1|cat1|酩颂酒庄干白": "🇫🇷",
     "store1|cat11|杏仁酸": "hide",
     "store1|cat11|阿佩罗橙光": "hide",
-    "store1|cat11|威士忌酸": "🇫🇷",
+    "store1|cat11|威士忌酸": "hide",
     "store1|cat11|教父": "hide",
     "store1|cat11|皮斯科酸": "hide",
     "store1|cat11|金菲士": "hide",
@@ -16,6 +16,8 @@
     "store1|cat11|椰林飘香": "hide",
     "store1|cat11|大都会": "hide",
     "store1|cat11|大吉利": "hide",
-    "store1|cat11|曼哈顿": "hide"
+    "store1|cat11|曼哈顿": "hide",
+    "store1|cat11|卡皮利亚": "hide",
+    "store1|cat2|星晨酩颂干红": "🇫🇷"
   }
 }
