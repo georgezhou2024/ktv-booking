@@ -44,6 +44,10 @@ main{max-width:900px;margin:0 auto;padding:14px;}
 .btn.primary{background:linear-gradient(135deg,#c9a96e,#a8864d);color:#17120c;border:0;font-weight:700;}
 .btn.danger{border-color:var(--red);color:#e08a8d;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:#1f1810;border:1px solid #4a3d2e;border-radius:14px;padding:20px;max-width:680px;width:100%;max-height:90vh;overflow:auto;color:#f0e6d8;}
+#bulk-preview .pv-row{padding:8px;border-bottom:1px dashed #3a2f22;font-size:13px;}
+#bulk-preview .pv-row b{color:#c9a96e;}
 /* 单品卡片 */
 .item-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px;}
 .ic-name{font-size:14px;font-weight:600;line-height:1.4;}
@@ -198,10 +202,39 @@ details.paste summary{cursor:pointer;color:var(--gold2);font-size:12.5px;padding
       <select id="ed-cat"></select>
       <input type="search" id="ed-q" placeholder="搜索中文 / 英文品名…">
       <button class="btn primary" id="btn-add">+ 新增单品</button>
+      <button class="btn" id="btn-bulk">批量添加</button>
       <label style="font-size:12px;color:#cfc4bb;white-space:nowrap;cursor:pointer"><input type="checkbox" id="fg-hide-all"> 隐藏所有国旗</label>
     </div>
     <div id="ed-list"></div>
   </section>
+
+  <!-- 批量添加弹窗 -->
+  <div class="modal-mask" id="bulk-modal" style="display:none">
+    <div class="modal-box">
+      <h3 style="margin:0 0 10px">批量添加单品</h3>
+      <div style="font-size:12px;color:#9a8f86;margin-bottom:8px">当前门店：<b id="bulk-store-name"></b> · 分类：<b id="bulk-cat-name"></b>（识别后自动归到此分类）</div>
+      <div class="tabs" style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn" data-btab="text">粘贴文字</button>
+        <button class="btn" data-btab="ocr">上传图片/PDF识别</button>
+      </div>
+      <div id="btab-text">
+        <textarea id="bulk-text" rows="8" style="width:100%;padding:10px;background:#2a2118;color:#f0e6d8;border:1px solid #4a3d2e;border-radius:8px;font-size:13px" placeholder="每行一款，自动识别品名 / 英文 / 价格。例：&#10;麦卡伦12年 Macallan 12 ¥1980 /1瓶 - ¥5880 /3瓶&#10;或直接贴一段菜单文字，系统自动拆行。"></textarea>
+      </div>
+      <div id="btab-ocr" style="display:none">
+        <input type="file" id="bulk-files" multiple accept="image/*,.pdf">
+        <div id="bulk-ocr-status" style="font-size:12px;color:#9a8f86;margin-top:6px">支持多张照片 / PDF，OCR 识别品名+价格</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn" id="bulk-cancel">取消</button>
+        <button class="btn primary" id="bulk-parse">识别预览</button>
+      </div>
+      <div id="bulk-preview" style="margin-top:14px;max-height:300px;overflow:auto;border-top:1px solid #4a3d2e;padding-top:10px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;display:none" id="bulk-confirm-row">
+        <button class="btn" id="bulk-confirm-no">取消</button>
+        <button class="btn primary" id="bulk-confirm-yes">确认加入待发布</button>
+      </div>
+    </div>
+  </div>
 
   <!-- PDF 对账 -->
   <section class="panel" id="panel-pdf">

@@ -207,6 +207,130 @@ function fillSelects(){
   $('#ed-cat').onchange=e=>{ activeRefKey=e.target.value; renderEdit(); };
   $('#ed-q').oninput=()=>renderEdit();
   $('#btn-add').onclick=onAdd;
+  initBulkModal();
+}
+
+// ---------- 批量添加 ----------
+let bulkPending=[];
+function initBulkModal(){
+  const modal=$('#bulk-modal');
+  $('#btn-bulk').onclick=()=>{
+    const sk=$('#ed-store').value;
+    const cat=$('#ed-cat');
+    if(!cat.value||cat.value==='__all'){ toast('请先在上方选择一个具体分类'); return; }
+    $('#bulk-store-name').textContent=$(('#ed-store')).selectedOptions[0].textContent;
+    $('#bulk-cat-name').textContent=cat.selectedOptions[0].textContent;
+    $('#bulk-preview').innerHTML='';
+    $('#bulk-confirm-row').style.display='none';
+    bulkPending=[];
+    modal.style.display='flex';
+  };
+  $('#bulk-cancel').onclick=()=>modal.style.display='none';
+  modal.onclick=e=>{ if(e.target===modal) modal.style.display='none'; };
+  $$('[data-btab]').forEach(b=>b.onclick=()=>{
+    $$('[data-btab]').forEach(x=>x.classList.remove('primary'));
+    b.classList.add('primary');
+    $('#btab-text').style.display=b.dataset.btab==='text'?'block':'none';
+    $('#btab-ocr').style.display=b.dataset.btab==='ocr'?'block':'none';
+  });
+  $('#bulk-parse').onclick=async()=>{
+    const tabText=$('#btab-text').style.display!=='none';
+    let text='';
+    if(tabText){
+      text=$('#bulk-text').value;
+    }else{
+      const files=$('#bulk-files').files;
+      if(!files.length){ toast('请先选图片/PDF'); return; }
+      $('#bulk-ocr-status').textContent='识别中…（首次加载语言包约10-30秒）';
+      try{
+        let lines=[];
+        for(const f of files){
+          if(f.type && f.type.startsWith('image/')){
+            const c=upscaleForOcr(await imageFileToCanvas(f));
+            lines=lines.concat(await ocrCanvases([c],()=>{},()=>{}));
+          }else{
+            if(!pdfLibs.pdfjs){
+              await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+              pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              pdfLibs.pdfjs=true;
+            }
+            const buf=await f.arrayBuffer();
+            const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+            for(let p=1;p<=pdf.numPages;p++){
+              const page=await pdf.getPage(p);
+              const tc=await page.getTextContent();
+              let pl=PDFR.linesFromTextItems(tc.items);
+              if(pl.length<3){
+                const vp=page.getViewport({scale:4});
+                const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
+                await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+                pl=await ocrCanvases([upscaleForOcr(cv)],()=>{},()=>{});
+              }
+              lines=lines.concat(pl);
+            }
+          }
+        }
+        text=lines.join('\n');
+        $('#bulk-ocr-status').textContent='识别完成，共 '+lines.length+' 行';
+      }catch(e){ $('#bulk-ocr-status').textContent='识别失败：'+e.message; return; }
+    }
+    bulkPending=parseBulkText(text);
+    if(!bulkPending.length){ toast('没识别到任何酒名'); return; }
+    renderBulkPreview();
+  };
+  $('#bulk-confirm-yes').onclick=()=>{
+    const sk=$('#ed-store').value;
+    const refs=currentRefs();
+    const ref=refs.find(r=>r.key===$('#ed-cat').value)||refs[refs.length-1];
+    for(const it of bulkPending){
+      const item=`<div class="item"><div class="name">${esc(it.zh)}${it.en?` <span class="en-name">${esc(it.en)}</span>`:''}</div>${it.price?`<div class="price">${esc(it.price)}</div>`:''}</div>`;
+      applyMutation(sk,ref,`${ref.label}：批量新增 ${it.zh}`,'add',html=>{
+        const pos=lastCardInsertPos(html);
+        return html.slice(0,pos)+item+html.slice(pos);
+      });
+    }
+    toast('已加入待发布 '+bulkPending.length+' 款');
+    modal.style.display='none';
+    renderEdit(); renderStage();
+  };
+  $('#bulk-confirm-no').onclick=()=>modal.style.display='none';
+}
+function parseBulkText(text){
+  const out=[];
+  const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  let lastPrice='';
+  for(let line of lines){
+    // 提取价格
+    const pm=line.match(/[¥￥]?\s*\d{3,5}\s*(\/|瓶|杯|位|份|\s*-\s*[¥￥]?\s*\d{3,5})/);
+    let price='';
+    if(pm){
+      price=line.slice(pm.index).trim();
+      line=line.slice(0,pm.index).trim();
+      lastPrice=price;
+    }else{
+      price=lastPrice; // 延续上一行价格
+    }
+    if(!line) continue;
+    // 拆中文/英文
+    let zh=line, en='';
+    const cjk=[...line.matchAll(/[一-鿿]/g)];
+    if(cjk.length){
+      const tail=line.slice(cjk[cjk.length-1].index+1).trim();
+      if(/[A-Za-zÀ-ɏ]{3,}/.test(tail)){ en=tail; zh=line.slice(0,line.length-tail.length).trim(); }
+    }
+    if(!zh) continue;
+    out.push({zh,en,price});
+  }
+  return out;
+}
+function renderBulkPreview(){
+  const html=bulkPending.map((it,i)=>`
+    <div class="pv-row">
+      <b>${i+1}.</b> ${esc(it.zh)} ${it.en?`<span style="color:#9a8f86">${esc(it.en)}</span>`:''}
+      ${it.price?`<span style="color:#c9a96e;float:right">${esc(it.price)}</span>`:'<span style="color:#e08a8d;float:right">无价</span>'}
+    </div>`).join('');
+  $('#bulk-preview').innerHTML=html;
+  $('#bulk-confirm-row').style.display='flex';
 }
 function fillCatSelect(sel,sk,kind){
   const list=kind==='pdf'?catListPdf(sk):catList(sk);
