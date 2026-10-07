@@ -212,7 +212,11 @@ function fillSelects(){
   $('#btn-upload-pdf').onclick=()=>$('#pdf-menu-file').click();
   $('#pdf-menu-file').onchange=async e=>{
     const f=e.target.files[0]; if(!f) return;
-    if(!confirm('将上传 '+f.name+'（'+(f.size/1024/1024).toFixed(1)+'MB）作为新版 PDF 菜单，覆盖线上 menu.pdf？')) return;
+    const sk=$('#ed-store').value;
+    const cat=$('#ed-cat').value;
+    if(!cat||cat==='__all'){ alert('请先在上方选择一个具体分类（比如"小吃"），再上传 PDF'); e.target.value=''; return; }
+    const catLabel=$('#ed-cat').selectedOptions[0].textContent;
+    if(!confirm('将把 PDF 关联到【'+catLabel+'】分类：前台用户点击该分类时直接打开此 PDF。\n\n文件名：pdfs/'+sk+'_'+cat+'.pdf\n确认上传？')) return;
     const pat=cfg.pat||prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
     toast('上传中…');
     try{
@@ -225,15 +229,26 @@ function fillSelects(){
       }
       const b64=btoa(bin);
       const H={Authorization:'Bearer '+pat,Accept:'application/vnd.github+json','Content-Type':'application/json'};
-      // 查现有 menu.pdf sha
+      const path='pdfs/'+sk+'_'+cat+'.pdf';
       let oldSha=null;
-      try{ const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/menu.pdf',{headers:H}); if(r.ok) oldSha=(await r.json()).sha; }catch{}
-      const body={message:'update menu.pdf '+new Date().toISOString(),content:b64};
+      try{ const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+path,{headers:H}); if(r.ok) oldSha=(await r.json()).sha; }catch{}
+      const body={message:'upload '+path,content:b64};
       if(oldSha) body.sha=oldSha;
-      const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/menu.pdf',{method:'PUT',headers:H,body:JSON.stringify(body)});
+      let r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+path,{method:'PUT',headers:H,body:JSON.stringify(body)});
       if(!r.ok){ const t=await r.text(); throw new Error(t.slice(0,200)); }
-      toast('✅ 已上传，前台点「PDF 原版菜单」即可看到');
+      // 更新 pdf_map.json
+      let map={};
+      try{ const mr=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{headers:H}); if(mr.ok){ const mj=await mr.json(); map=JSON.parse(atob(mj.content)); map._sha=mj.sha; } }catch{}
+      map[sk]=map[sk]||{};
+      map[sk][cat]=path;
+      const sha=map._sha; delete map._sha;
+      const mapBody={message:'update pdf_map '+sk+'/'+cat,content:btoa(JSON.stringify(map,null,2))};
+      if(sha) mapBody.sha=sha;
+      r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{method:'PUT',headers:H,body:JSON.stringify(mapBody)});
+      if(!r.ok){ const t=await r.text(); throw new Error('pdf_map 更新失败: '+t.slice(0,150)); }
+      toast('✅ 已上传：前台点【'+catLabel+'】分类即打开此 PDF');
     }catch(err){ alert('上传失败：'+err.message); }
+    e.target.value='';
   };
 }
 

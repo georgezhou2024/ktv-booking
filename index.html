@@ -900,8 +900,17 @@ function renderTabs(data) {
 function visibleCats(data){ return data.categories.filter(c => !c.hidden); }
 
 // 切换分类
+let PDF_MAP={};
+fetch('data/pdf_map.json?v='+(window.VER||1)).then(r=>r.json()).then(j=>PDF_MAP=j).catch(()=>{});
 function showCat(catId) {
     const data = STORE_DATA[currentStore];
+
+    // 该分类配置了 PDF：直接全屏打开
+    const pdfFile = PDF_MAP[currentStore] && PDF_MAP[currentStore][catId];
+    if (pdfFile) {
+        openPdfOverlay(pdfFile);
+        return;
+    }
 
     // 房间、水烟为全屏独立板块：隐藏主分类网格与页脚，像独立主页
     const isSubSection = catId === 'rooms' || catId === 'shisha';
@@ -995,34 +1004,24 @@ function backToShisha() {
     document.getElementById('sh-list').style.display = 'block';
     window.scrollTo(0, 0);
 }
-// PDF 原版菜单：全屏 iframe，带缓存参数
-(function(){
-    var overlay=document.createElement('div');
-    overlay.id='pdf-overlay';
-    overlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column';
-    overlay.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1a1410;color:#f0e6d8">'
-        +'<span style="font-size:14px;font-weight:600">📄 PDF 原版菜单</span>'
-        +'<button id="pdf-close" style="background:#b3242a;color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px">关闭 ✕</button>'
-        +'</div>'
-        +'<iframe id="pdf-frame" style="flex:1;width:100%;border:0;background:#fff"></iframe>';
-    document.body.appendChild(overlay);
-    var loaded=false;
-    document.getElementById('btn-pdf-menu').onclick=function(){
-        overlay.style.display='flex';
-        if(!loaded){
-            // 预加载 + 缓存版本号
-            var v=document.getElementById('store-title')?location.search.split('v=')[1]||'1':'1';
-            document.getElementById('pdf-frame').src='menu.pdf?v='+v;
-            loaded=true;
-        }
-    };
-    document.getElementById('pdf-close').onclick=function(){ overlay.style.display='none'; };
-    overlay.onclick=function(e){ if(e.target===overlay) overlay.style.display='none'; };
-    // 后台预加载 PDF（空闲时）
-    window.addEventListener('load',function(){
-        setTimeout(function(){ var l=document.createElement('link'); l.rel='prefetch'; l.href='menu.pdf'; document.head.appendChild(l); },3000);
-    });
-})();
+// PDF 原版菜单：全屏 iframe
+var pdfOverlay=document.createElement('div');
+pdfOverlay.id='pdf-overlay';
+pdfOverlay.style.cssText='position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column';
+pdfOverlay.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1a1410;color:#f0e6d8">'
+    +'<span style="font-size:14px;font-weight:600">📄 菜单</span>'
+    +'<button id="pdf-close" style="background:#b3242a;color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px">关闭 ✕</button>'
+    +'</div>'
+    +'<iframe id="pdf-frame" style="flex:1;width:100%;border:0;background:#fff"></iframe>';
+document.body.appendChild(pdfOverlay);
+function openPdfOverlay(src){
+    pdfOverlay.style.display='flex';
+    document.getElementById('pdf-frame').src=src+(src.includes('?')?'&':'?')+'v='+(window.VER||Date.now());
+}
+document.getElementById('pdf-close').onclick=function(){ pdfOverlay.style.display='none'; document.getElementById('pdf-frame').src='about:blank'; };
+pdfOverlay.onclick=function(e){ if(e.target===pdfOverlay){ pdfOverlay.style.display='none'; document.getElementById('pdf-frame').src='about:blank'; } };
+var btnPdf=document.getElementById('btn-pdf-menu');
+if(btnPdf) btnPdf.onclick=function(){ openPdfOverlay('menu.pdf'); };
 </script>
 </body>
 </html>
