@@ -181,15 +181,12 @@ function subHtmlFrom(sub){
 // 按原结构风格重建 .name（enLoc: span / subbr / inline / none）
 function buildNameHtml(zh,en,sub,it){
   const subPart=subHtmlFrom(sub);
-  if(it.enLoc==='subbr'){
-    // Acme 风格：英文在 sub-text 末尾 <br>
-    const subInner=esc(sub).replace(/\n/g,'<br>')+(en?'<br>'+esc(en):'');
-    return `<div class="name">${esc(zh)}<div class="sub-text">${subInner}</div></div>`;
+  if(it.enLoc==='subbr' && !en){
+    // Acme 风格：英文在 sub-text 末尾 <br>（仅当原本就是这种结构且用户没在英文框里填新内容）
+    return `<div class="name">${esc(zh)}<div class="sub-text">${esc(sub).replace(/\n/g,'<br>')}</div></div>`;
   }
-  if(it.hasSpan||it.enLoc==='span'){
-    return `<div class="name">${esc(zh)}${en?` <span class="en-name">${esc(en)}</span>`:''}${subPart}</div>`;
-  }
-  return `<div class="name">${esc(zh)}${en?' '+esc(en):''}${subPart}</div>`;
+  // 默认：中文在上，英文在下（en-name span）
+  return `<div class="name">${esc(zh)}${en?` <span class="en-name">${esc(en)}</span>`:''}${subPart}</div>`;
 }
 // 在一段 HTML 内定位 class 含 cls 的第一个元素的完整区间
 function elementSpan(html,cls){
