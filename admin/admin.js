@@ -62,8 +62,8 @@ async function enter(){
   updateConn();
 }
 async function loadData(){
-  let v='?v=1';
-  try{ const vt=await (await fetch('../data/version.txt')).text(); window.VER=vt.trim(); v='?v='+vt.trim(); }catch(e){}
+  let v='';
+  try{ const vt=await (await fetch('../data/version.txt?_='+Date.now())).text(); window.VER=vt.trim(); v='?v='+vt.trim(); }catch(e){ v='?v=1'; }
   const manifest=await (await fetch('../data/stores.json'+v)).json();
   STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
   if(!STORE_KEYS.includes(activeStore)) activeStore=STORE_KEYS[0];
