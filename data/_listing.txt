@@ -1,0 +1,6 @@
+﻿data\acme.json
+data\eros.json
+data\phroom.json
+data\sensory.json
+data\shisha.json
+data\stores.json
