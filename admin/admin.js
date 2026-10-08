@@ -60,6 +60,7 @@ async function enter(){
   await loadData();
   fillSelects(); renderEdit(); renderStage(); renderHistory(); renderStores();
   updateConn();
+  if(!cfg.pat){ $('#btn-pat-set').click(); }
 }
 async function loadData(){
   let v='';
