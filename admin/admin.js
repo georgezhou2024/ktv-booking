@@ -222,13 +222,13 @@ function fillSelects(){
     try{
       const buf=await f.arrayBuffer();
       const H={Authorization:'Bearer '+pat,Accept:'application/vnd.github+json','Content-Type':'application/json'};
-      // 用 pdf.js 渲染每页为 WebP
+      // 用 pdf.js 渲染每页为 WebP（传副本，避免 detach）
       if(!pdfLibs.pdfjs){
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
         pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         pdfLibs.pdfjs=true;
       }
-      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf).slice().buffer}).promise;
       const imgPaths=[];
       for(let p=1;p<=pdf.numPages;p++){
         toast('渲染第 '+p+'/'+pdf.numPages+' 页…');
