@@ -62,14 +62,15 @@ async function enter(){
   updateConn();
 }
 async function loadData(){
-  const stores={};
-  const manifest=await (await fetch('../data/stores.json?t='+Date.now())).json();
+  let v='?v=1';
+  try{ const vt=await (await fetch('../data/version.txt')).text(); window.VER=vt.trim(); v='?v='+vt.trim(); }catch(e){}
+  const manifest=await (await fetch('../data/stores.json'+v)).json();
   STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
   if(!STORE_KEYS.includes(activeStore)) activeStore=STORE_KEYS[0];
-  await Promise.all(STORE_KEYS.map(async k=>{ stores[k]=await (await fetch('../data/'+k+'.json?t='+Date.now())).json(); }));
-  const shisha=await (await fetch('../data/shisha.json?t='+Date.now())).json();
+  await Promise.all(STORE_KEYS.map(async k=>{ stores[k]=await (await fetch('../data/'+k+'.json'+v)).json(); }));
+  const shisha=await (await fetch('../data/shisha.json'+v)).json();
   let flags={hideAll:false,overrides:{}};
-  try{ flags=await (await fetch('../data/flags.json?t='+Date.now())).json(); }catch(e){}
+  try{ flags=await (await fetch('../data/flags.json'+v)).json(); }catch(e){}
   DATA={stores,shisha,storesList:manifest,flags};
 }
 
