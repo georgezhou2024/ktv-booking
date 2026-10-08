@@ -48,12 +48,12 @@ $('#g-btn').onclick=()=>{
   cfg.repo=$('#g-repo').value.trim()||'ktv-booking';
   cfg.branch=$('#g-branch').value.trim()||'main';
   localStorage.setItem(CFG_KEY,JSON.stringify(cfg));
-  sessionStorage.setItem(SESS_KEY,'1');
+  localStorage.setItem(SESS_KEY,'1');
   enter();
 };
 $('#g-pwd').addEventListener('keydown',e=>{ if(e.key==='Enter')$('#g-btn').click(); });
 $('#g-pat').addEventListener('keydown',e=>{ if(e.key==='Enter')$('#g-btn').click(); });
-$('#btn-logout').onclick=()=>{ sessionStorage.removeItem(SESS_KEY); location.reload(); };
+$('#btn-logout').onclick=()=>{ localStorage.removeItem(SESS_KEY); location.reload(); };
 
 async function enter(){
   $('#gate').style.display='none';
@@ -1517,7 +1517,7 @@ $$('#nav button').forEach(b=>b.onclick=()=>{
 });
 
 // ---------- 启动 ----------
-if(sessionStorage.getItem(SESS_KEY)==='1'){
+if(localStorage.getItem(SESS_KEY)==='1'){
   $('#g-pat').value=cfg.pat; $('#g-owner').value=cfg.owner; $('#g-repo').value=cfg.repo; $('#g-branch').value=cfg.branch;
   enter();
 }
