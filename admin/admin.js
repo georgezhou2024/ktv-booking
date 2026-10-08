@@ -218,9 +218,45 @@ function fillSelects(){
     const catLabel=$('#ed-cat').selectedOptions[0].textContent;
     if(!confirm('将把 PDF 关联到【'+catLabel+'】分类：前台用户点击该分类时直接打开此 PDF。\n\n文件名：pdfs/'+sk+'_'+cat+'.pdf\n确认上传？')) return;
     const pat=cfg.pat||prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
-    toast('上传中…');
+    toast('PDF 压缩中（手机端秒开）…');
     try{
-      const buf=await f.arrayBuffer();
+      let buf=await f.arrayBuffer();
+      // 自动压缩：用 pdf.js 渲染每页为 JPEG，再合成新 PDF（手机秒开）
+      try{
+        if(!pdfLibs.pdfjs){
+          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+          pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          pdfLibs.pdfjs=true;
+        }
+        if(!pdfLibs.jspdf){
+          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+          pdfLibs.jspdf=true;
+        }
+        toast('PDF 压缩中（渲染第 1 页）…');
+        const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
+        const { jsPDF }=window.jspdf;
+        const out=new jsPDF({unit:'pt',format:'a4',compress:true});
+        for(let p=1;p<=pdf.numPages;p++){
+          toast('PDF 压缩中（渲染第 '+p+'/'+pdf.numPages+' 页）…');
+          const page=await pdf.getPage(p);
+          const vp=page.getViewport({scale:2.0}); // 144 DPI
+          const cv=document.createElement('canvas');
+          cv.width=vp.width; cv.height=vp.height;
+          const ctx=cv.getContext('2d');
+          await page.render({canvasContext:ctx,viewport:vp}).promise;
+          const img=cv.toDataURL('image/jpeg',0.72);
+          if(p>1) out.addPage('a4','portrait');
+          const pw=out.internal.pageSize.getWidth();
+          const ph=out.internal.pageSize.getHeight();
+          const r=cv.width/cv.height, pr=pw/ph;
+          let w,h; if(r>pr){ w=pw; h=pw/r; } else { h=ph; w=ph*r; }
+          out.addImage(img,'JPEG',(pw-w)/2,(ph-h)/2,w,h,undefined,'FAST');
+        }
+        const newBuf=out.output('arraybuffer');
+        const oldKB=(buf.byteLength/1024).toFixed(0), newKB=(newBuf.byteLength/1024).toFixed(0);
+        console.log('PDF compressed',oldKB,'KB ->',newKB,'KB');
+        if(newBuf.byteLength<buf.byteLength) buf=newBuf;
+      }catch(compErr){ console.warn('压缩失败，用原文件',compErr); }
       const bytes=new Uint8Array(buf);
       let bin='';
       const CHUNK=0x8000;

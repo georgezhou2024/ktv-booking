@@ -1021,13 +1021,21 @@ pdfOverlay.innerHTML='<div style="display:flex;justify-content:space-between;ali
     +'<div id="pdf-scroll" style="flex:1;overflow:auto;background:#222;text-align:center"><div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">加载中…</div></div>';
 document.body.appendChild(pdfOverlay);
 var pdfjsLib=null;
+function preloadPdfJs(){
+    if(pdfjsLib) return;
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=function(){ pdfjsLib=window.pdfjsLib; pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; };
+    document.head.appendChild(s);
+}
+window.addEventListener('load',preloadPdfJs);
 async function openPdfOverlay(src){
     pdfOverlay.style.display='flex';
-    var st=document.getElementById('pdf-status');
     var sc=document.getElementById('pdf-scroll');
-    sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">PDF.js 加载中…</div>';
+    sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">PDF 加载中…</div>';
     try{
         if(!pdfjsLib){
+            sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">PDF 引擎加载中…</div>';
             await new Promise((res,rej)=>{
                 var s=document.createElement('script');
                 s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
@@ -1036,14 +1044,26 @@ async function openPdfOverlay(src){
             pdfjsLib=window.pdfjsLib;
             pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
-        sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">解析 PDF 中…</div>';
+        sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">下载 PDF 中…</div>';
         var resp=await fetch(src+(src.includes('?')?'&':'?')+'v='+(window.VER||Date.now()));
-        var buf=await resp.arrayBuffer();
-        var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        var total=+resp.headers.get('content-length')||0;
+        var reader=resp.body.getReader();
+        var chunks=[], got=0;
+        while(true){
+            var r=await reader.read();
+            if(r.done) break;
+            chunks.push(r.value); got+=r.value.length;
+            var st=document.getElementById('pdf-status');
+            if(st && total) st.textContent='下载 PDF 中… '+Math.round(got/1024)+'KB / '+Math.round(total/1024)+'KB';
+        }
+        var buf=new Uint8Array(got);
+        var off=0; chunks.forEach(c=>{buf.set(c,off); off+=c.length;});
+        sc.innerHTML='<div id="pdf-status" style="color:#aaa;padding:40px;font-size:13px">解析 PDF 中…</div>';
+        var pdf=await pdfjsLib.getDocument({data:buf.buffer}).promise;
         sc.innerHTML='';
         for(var p=1;p<=pdf.numPages;p++){
             var page=await pdf.getPage(p);
-            var vp=page.getViewport({scale:2});
+            var vp=page.getViewport({scale:1.5});
             var cv=document.createElement('canvas');
             cv.width=vp.width; cv.height=vp.height;
             cv.style.cssText='max-width:100%;height:auto;display:block;margin:0 auto 4px;box-shadow:0 2px 10px rgba(0,0,0,.5)';
