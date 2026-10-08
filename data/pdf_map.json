@@ -1,6 +1,15 @@
 {
   "acme": {
-    "cat12": "pdfs/acme_cat12.pdf"
+    "cat12": {
+      "pdf": "pdfs/acme_cat12.pdf",
+      "images": [
+        "pdfs/acme_cat12_p1.webp",
+        "pdfs/acme_cat12_p2.webp",
+        "pdfs/acme_cat12_p3.webp",
+        "pdfs/acme_cat12_p4.webp",
+        "pdfs/acme_cat12_p5.webp"
+      ]
+    }
   },
   "phroom": {
     "cat14": "pdfs/phroom_cat14.pdf"
