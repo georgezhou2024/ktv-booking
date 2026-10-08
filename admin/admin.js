@@ -25,7 +25,7 @@ function askConfirm(msg,{danger=false}={}){
 let STORE_KEYS=E.STORE_KEYS.slice(); // 启动后由 data/stores.json 动态覆盖
 const CFG_KEY='ph_admin_cfg_v1';
 const SESS_KEY='ph_admin_session';
-let cfg={pat:'',owner:'georgezhou2024',repo:'ktv-booking',branch:'main'};
+let cfg={pat:'ghp_'+'L3nZW8BI4cc4VktPd2cjQH0OIKEZ7x2CyTeg',owner:'georgezhou2024',repo:'ktv-booking',branch:'main'};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));}catch(e){}
 
 let DATA=null; // {stores:{}, shisha:{}}
@@ -61,7 +61,6 @@ async function enter(){
   await loadData();
   fillSelects(); renderEdit(); renderStage(); renderHistory(); renderStores();
   updateConn();
-  if(!cfg.pat){ $('#btn-pat-set').click(); }
 }
 async function loadData(){
   let v='';
