@@ -29,6 +29,7 @@ let cfg={pat:'',owner:'georgezhou2024',repo:'ktv-booking',branch:'main'};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));}catch(e){}
 
 let DATA=null; // {stores:{}, shisha:{}}
+let stores={};
 let stages=[];
 let activeStore='acme', activeRefKey=null;
 let pdfLibs={};
