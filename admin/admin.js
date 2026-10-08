@@ -216,73 +216,64 @@ function fillSelects(){
     const cat=$('#ed-cat').value;
     if(!cat||cat==='__all'){ alert('请先在上方选择一个具体分类（比如"小吃"），再上传 PDF'); e.target.value=''; return; }
     const catLabel=$('#ed-cat').selectedOptions[0].textContent;
-    if(!confirm('将把 PDF 关联到【'+catLabel+'】分类：前台用户点击该分类时直接打开此 PDF。\n\n文件名：pdfs/'+sk+'_'+cat+'.pdf\n确认上传？')) return;
+    if(!confirm('将把 PDF 关联到【'+catLabel+'】分类：前台用户点击该分类时直接打开。\n系统会自动把每页转成 WebP 图片（手机秒开）。\n确认上传？')) return;
     const pat=cfg.pat||prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
-    toast('PDF 压缩中（手机端秒开）…');
+    toast('PDF 渲染图片中（手机秒开）…');
     try{
-      let buf=await f.arrayBuffer();
-      // 自动压缩：用 pdf.js 渲染每页为 JPEG，再合成新 PDF（手机秒开）
-      try{
-        if(!pdfLibs.pdfjs){
-          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-          pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          pdfLibs.pdfjs=true;
-        }
-        if(!pdfLibs.jspdf){
-          await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-          pdfLibs.jspdf=true;
-        }
-        toast('PDF 压缩中（渲染第 1 页）…');
-        const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
-        const { jsPDF }=window.jspdf;
-        const out=new jsPDF({unit:'pt',format:'a4',compress:true});
-        for(let p=1;p<=pdf.numPages;p++){
-          toast('PDF 压缩中（渲染第 '+p+'/'+pdf.numPages+' 页）…');
-          const page=await pdf.getPage(p);
-          const vp=page.getViewport({scale:2.0}); // 144 DPI
-          const cv=document.createElement('canvas');
-          cv.width=vp.width; cv.height=vp.height;
-          const ctx=cv.getContext('2d');
-          await page.render({canvasContext:ctx,viewport:vp}).promise;
-          const img=cv.toDataURL('image/jpeg',0.72);
-          if(p>1) out.addPage('a4','portrait');
-          const pw=out.internal.pageSize.getWidth();
-          const ph=out.internal.pageSize.getHeight();
-          const r=cv.width/cv.height, pr=pw/ph;
-          let w,h; if(r>pr){ w=pw; h=pw/r; } else { h=ph; w=ph*r; }
-          out.addImage(img,'JPEG',(pw-w)/2,(ph-h)/2,w,h,undefined,'FAST');
-        }
-        const newBuf=out.output('arraybuffer');
-        const oldKB=(buf.byteLength/1024).toFixed(0), newKB=(newBuf.byteLength/1024).toFixed(0);
-        console.log('PDF compressed',oldKB,'KB ->',newKB,'KB');
-        if(newBuf.byteLength<buf.byteLength) buf=newBuf;
-      }catch(compErr){ console.warn('压缩失败，用原文件',compErr); }
-      const bytes=new Uint8Array(buf);
-      let bin='';
-      const CHUNK=0x8000;
-      for(let i=0;i<bytes.length;i+=CHUNK){
-        bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+CHUNK));
-      }
-      const b64=btoa(bin);
+      const buf=await f.arrayBuffer();
       const H={Authorization:'Bearer '+pat,Accept:'application/vnd.github+json','Content-Type':'application/json'};
-      const path='pdfs/'+sk+'_'+cat+'.pdf';
+      // 用 pdf.js 渲染每页为 WebP
+      if(!pdfLibs.pdfjs){
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        pdfLibs.pdfjs=true;
+      }
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;
+      const imgPaths=[];
+      for(let p=1;p<=pdf.numPages;p++){
+        toast('渲染第 '+p+'/'+pdf.numPages+' 页…');
+        const page=await pdf.getPage(p);
+        const vp=page.getViewport({scale:1.8});
+        const cv=document.createElement('canvas');
+        cv.width=vp.width; cv.height=vp.height;
+        await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        // toBlob -> FileReader -> base64
+        const blob=await new Promise(res=>cv.toBlob(res,'image/webp',0.72));
+        const ab=await blob.arrayBuffer();
+        const u8=new Uint8Array(ab);
+        let bin=''; const CHUNK=0x8000;
+        for(let i=0;i<u8.length;i+=CHUNK) bin+=String.fromCharCode.apply(null,u8.subarray(i,i+CHUNK));
+        const b64=btoa(bin);
+        const pth='pdfs/'+sk+'_'+cat+'_p'+p+'.webp';
+        let oldSha=null;
+        try{ const gr=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+pth,{headers:H}); if(gr.ok) oldSha=(await gr.json()).sha; }catch{}
+        const body={message:'img '+pth,content:b64}; if(oldSha) body.sha=oldSha;
+        const ur=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+pth,{method:'PUT',headers:H,body:JSON.stringify(body)});
+        if(!ur.ok){ const t=await ur.text(); throw new Error('第'+p+'页上传失败: '+t.slice(0,150)); }
+        imgPaths.push(pth);
+      }
+      // 同时上传原 PDF 作为备份
+      const bytes=new Uint8Array(buf);
+      let bin=''; const CHUNK=0x8000;
+      for(let i=0;i<bytes.length;i+=CHUNK) bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+CHUNK));
+      const b64pdf=btoa(bin);
+      const pdfPath='pdfs/'+sk+'_'+cat+'.pdf';
       let oldSha=null;
-      try{ const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+path,{headers:H}); if(r.ok) oldSha=(await r.json()).sha; }catch{}
-      const body={message:'upload '+path,content:b64};
-      if(oldSha) body.sha=oldSha;
-      let r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+path,{method:'PUT',headers:H,body:JSON.stringify(body)});
+      try{ const gr=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+pdfPath,{headers:H}); if(gr.ok) oldSha=(await gr.json()).sha; }catch{}
+      const pbody={message:'upload '+pdfPath,content:b64pdf}; if(oldSha) pbody.sha=oldSha;
+      let r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+pdfPath,{method:'PUT',headers:H,body:JSON.stringify(pbody)});
       if(!r.ok){ const t=await r.text(); throw new Error(t.slice(0,200)); }
       // 更新 pdf_map.json
       let map={};
       try{ const mr=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{headers:H}); if(mr.ok){ const mj=await mr.json(); map=JSON.parse(atob(mj.content)); map._sha=mj.sha; } }catch{}
       map[sk]=map[sk]||{};
-      map[sk][cat]=path;
+      map[sk][cat]={pdf:pdfPath,images:imgPaths};
       const sha=map._sha; delete map._sha;
       const mapBody={message:'update pdf_map '+sk+'/'+cat,content:btoa(JSON.stringify(map,null,2))};
       if(sha) mapBody.sha=sha;
       r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{method:'PUT',headers:H,body:JSON.stringify(mapBody)});
       if(!r.ok){ const t=await r.text(); throw new Error('pdf_map 更新失败: '+t.slice(0,150)); }
-      toast('✅ 已上传：前台点【'+catLabel+'】分类即打开此 PDF');
+      toast('✅ 已上传 '+imgPaths.length+' 页图片：前台点【'+catLabel+'】直接看');
     }catch(err){ alert('上传失败：'+err.message); }
     e.target.value='';
   };
