@@ -12,6 +12,28 @@
     }
   },
   "phroom": {
-    "cat14": "pdfs/phroom_cat14.pdf"
+    "cat14": {
+      "pdf": "pdfs/phroom_cat14.pdf",
+      "images": [
+        "pdfs/phroom_cat14_p1.webp",
+        "pdfs/phroom_cat14_p2.webp",
+        "pdfs/phroom_cat14_p3.webp",
+        "pdfs/phroom_cat14_p4.webp",
+        "pdfs/phroom_cat14_p5.webp",
+        "pdfs/phroom_cat14_p6.webp",
+        "pdfs/phroom_cat14_p7.webp",
+        "pdfs/phroom_cat14_p8.webp",
+        "pdfs/phroom_cat14_p9.webp",
+        "pdfs/phroom_cat14_p10.webp",
+        "pdfs/phroom_cat14_p11.webp",
+        "pdfs/phroom_cat14_p12.webp",
+        "pdfs/phroom_cat14_p13.webp",
+        "pdfs/phroom_cat14_p14.webp",
+        "pdfs/phroom_cat14_p15.webp",
+        "pdfs/phroom_cat14_p16.webp",
+        "pdfs/phroom_cat14_p17.webp",
+        "pdfs/phroom_cat14_p18.webp"
+      ]
+    }
   }
 }
