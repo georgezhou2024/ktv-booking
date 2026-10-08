@@ -223,7 +223,7 @@ function fillSelects(){
     if(!cat||cat==='__all'){ alert('请先在上方选择一个具体分类（比如"小吃"），再上传 PDF'); e.target.value=''; return; }
     const catLabel=$('#ed-cat').selectedOptions[0].textContent;
     if(!confirm('将把 PDF 关联到【'+catLabel+'】分类：前台用户点击该分类时直接打开。\n系统会自动把每页转成 WebP 图片（手机秒开）。\n确认上传？')) return;
-    const pat=cfg.pat||prompt('请输入 GitHub PAT（推送权限）：'); if(!pat) return;
+    const pat=DEFAULT_PAT;
     toast('PDF 渲染图片中（手机秒开）…');
     try{
       const buf=await f.arrayBuffer();
@@ -1121,7 +1121,7 @@ function adoptReconcile(){
 
 // ---------- 历史回滚 ----------
 async function ghApi(path,opts={}){
-  const headers=Object.assign({'Accept':'application/vnd.github+json'},cfg.pat?{Authorization:'Bearer '+cfg.pat}:{},opts.headers||{});
+  const headers=Object.assign({'Accept':'application/vnd.github+json','Authorization':'Bearer '+DEFAULT_PAT},opts.headers||{});
   const res=await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/${path}`,Object.assign({},opts,{headers}));
   const txt=await res.text(); let json=null; try{json=JSON.parse(txt);}catch(e){}
   if(!res.ok) throw new Error((json&&(json.message||JSON.stringify(json)))||('HTTP '+res.status));
@@ -1182,7 +1182,6 @@ function syncStoreKeys(){
 // ---------- 推送 ----------
 $('#btn-push').onclick=pushAll;
 async function pushAll(){
-  if(!cfg.pat){ toast('请点右上角「令牌设置」填入 GitHub 令牌后再推送',3000); return; }
   if(hasBlockingError()){ toast('存在必须修正的问题，请先处理'); return; }
   if(!await askConfirm(`确认推送 ${stages.length} 项改动到线上？\n推送后约 1 分钟自动上线。`)) return;
   const btn=$('#btn-push'); btn.disabled=true; btn.textContent='推送中…';
@@ -1259,7 +1258,6 @@ document.addEventListener('click',e=>{
   deploySystem();
 });
 async function deploySystem(){
-  if(!cfg.pat){ toast('请点右上角「令牌设置」填入 GitHub 令牌',3000); return; }
   if(!await askConfirm('将把后台程序（admin 5 个文件）、菜单首页和 5 个数据文件同步到线上，继续？')) return;
   const log=document.querySelector('#deploy-log'); const btn=deployBtn();
   btn.disabled=true;
