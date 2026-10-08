@@ -64,13 +64,15 @@ async function enter(){
 async function loadData(){
   let v='';
   try{ const vt=await (await fetch('../data/version.txt?_='+Date.now())).text(); window.VER=vt.trim(); v='?v='+vt.trim(); }catch(e){ v='?v=1'; }
-  const manifest=await (await fetch('../data/stores.json'+v)).json();
+  async function getJSON(u){ for(let i=0;i<3;i++){ try{ const r=await fetch(u); if(r.ok) return await r.json(); }catch(e){ await new Promise(r=>setTimeout(r,500)); } } throw new Error('加载失败: '+u); }
+  const manifest=await getJSON('../data/stores.json'+v);
   STORE_KEYS.splice(0,STORE_KEYS.length,...manifest.map(m=>m.key));
   if(!STORE_KEYS.includes(activeStore)) activeStore=STORE_KEYS[0];
-  await Promise.all(STORE_KEYS.map(async k=>{ stores[k]=await (await fetch('../data/'+k+'.json'+v)).json(); }));
-  const shisha=await (await fetch('../data/shisha.json'+v)).json();
+  await Promise.all(STORE_KEYS.map(async k=>{ try{ stores[k]=await getJSON('../data/'+k+'.json'+v); }catch(e){ console.warn('跳过',k,e); } }));
+  let shisha={};
+  try{ shisha=await getJSON('../data/shisha.json'+v); }catch(e){}
   let flags={hideAll:false,overrides:{}};
-  try{ flags=await (await fetch('../data/flags.json'+v)).json(); }catch(e){}
+  try{ flags=await getJSON('../data/flags.json'+v); }catch(e){}
   DATA={stores,shisha,storesList:manifest,flags};
 }
 
