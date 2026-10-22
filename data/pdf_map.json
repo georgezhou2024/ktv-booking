@@ -55,5 +55,12 @@
         "pdfs/phroom_cat14_p19.webp"
       ]
     }
+  },
+  "sensory": {
+    "cat11": {
+      "images": [
+        "pdfs/sensory_cat11_p1.webp"
+      ]
+    }
   }
 }
