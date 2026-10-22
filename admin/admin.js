@@ -279,7 +279,8 @@ function fillSelects(){
       if(sha) mapBody.sha=sha;
       r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{method:'PUT',headers:H,body:JSON.stringify(mapBody)});
       if(!r.ok){ const t=await r.text(); throw new Error('pdf_map 更新失败: '+t.slice(0,150)); }
-      toast('✅ 已上传 '+imgPaths.length+' 页图片：前台点【'+catLabel+'】直接看');
+      await bumpVersionFile('PDF更新 '+sk+'/'+cat);
+      toast('✅ 已上传 '+imgPaths.length+' 页图片：前台点【'+catLabel+'】直接看（已自动推送，无需再点一键推送）');
     }catch(err){ alert('上传失败：'+err.message); }
     e.target.value='';
   };
@@ -331,7 +332,8 @@ function fillSelects(){
       if(sha) mapBody.sha=sha;
       const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{method:'PUT',headers:H,body:JSON.stringify(mapBody)});
       if(!r.ok){ const t=await r.text(); throw new Error('pdf_map 更新失败: '+t.slice(0,150)); }
-      toast('✅ 已上传 '+imgPaths.length+' 张照片：前台点【'+catLabel+'】直接看');
+      await bumpVersionFile('照片更新 '+sk+'/'+cat);
+      toast('✅ 已上传 '+imgPaths.length+' 张照片：前台点【'+catLabel+'】直接看（已自动推送，无需再点一键推送）');
     }catch(err){ alert('上传失败：'+err.message); }
     e.target.value='';
   };
