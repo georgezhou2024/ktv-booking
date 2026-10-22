@@ -283,6 +283,58 @@ function fillSelects(){
     }catch(err){ alert('上传失败：'+err.message); }
     e.target.value='';
   };
+
+  // ---------- 此分类直接传照片（多图，前台点分类直接看图） ----------
+  $('#btn-upload-photos').onclick=()=>$('#photo-menu-file').click();
+  $('#photo-menu-file').onchange=async e=>{
+    const files=Array.from(e.target.files||[]); if(!files.length) return;
+    const sk=$('#ed-store').value;
+    const cat=$('#ed-cat').value;
+    if(!cat||cat==='__all'){ alert('请先在上方选择一个具体分类（比如"小吃"），再上传照片'); e.target.value=''; return; }
+    const catLabel=$('#ed-cat').selectedOptions[0].textContent;
+    if(!confirm('将把 '+files.length+' 张照片关联到【'+catLabel+'】分类：前台用户点击该分类时直接看图。\n（自动压缩为 WebP 手机秒开）\n确认上传？')) return;
+    const pat=DEFAULT_PAT;
+    const H={Authorization:'Bearer '+pat,Accept:'application/vnd.github+json','Content-Type':'application/json'};
+    try{
+      const imgPaths=[];
+      for(let i=0;i<files.length;i++){
+        toast('处理第 '+(i+1)+'/'+files.length+' 张…');
+        // 读图 -> canvas -> webp
+        const bitmap=await createImageBitmap(files[i]);
+        const maxW=1400;
+        const scale=bitmap.width>maxW?maxW/bitmap.width:1;
+        const cv=document.createElement('canvas');
+        cv.width=Math.round(bitmap.width*scale);
+        cv.height=Math.round(bitmap.height*scale);
+        cv.getContext('2d').drawImage(bitmap,0,0,cv.width,cv.height);
+        const blob=await new Promise(res=>cv.toBlob(res,'image/webp',0.78));
+        const ab=await blob.arrayBuffer();
+        const u8=new Uint8Array(ab);
+        let bin=''; const CHUNK=0x8000;
+        for(let k=0;k<u8.length;k+=CHUNK) bin+=String.fromCharCode.apply(null,u8.subarray(k,k+CHUNK));
+        const b64=btoa(bin);
+        const pth='pdfs/'+sk+'_'+cat+'_p'+(i+1)+'.webp';
+        let oldSha=null;
+        try{ const gr=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+pth,{headers:H}); if(gr.ok) oldSha=(await gr.json()).sha; }catch{}
+        const body={message:'photo '+pth,content:b64}; if(oldSha) body.sha=oldSha;
+        const ur=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/'+pth,{method:'PUT',headers:H,body:JSON.stringify(body)});
+        if(!ur.ok){ const t=await ur.text(); throw new Error('第'+(i+1)+'张上传失败: '+t.slice(0,150)); }
+        imgPaths.push(pth);
+      }
+      // 更新 pdf_map.json（与 PDF 同一套机制，前台直接看图）
+      let map={};
+      try{ const mr=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{headers:H}); if(mr.ok){ const mj=await mr.json(); map=JSON.parse(atob(mj.content)); map._sha=mj.sha; } }catch{}
+      map[sk]=map[sk]||{};
+      map[sk][cat]={images:imgPaths};
+      const sha=map._sha; delete map._sha;
+      const mapBody={message:'photos '+sk+'/'+cat,content:btoa(JSON.stringify(map,null,2))};
+      if(sha) mapBody.sha=sha;
+      const r=await fetch('https://api.github.com/repos/georgezhou2024/ktv-booking/contents/data/pdf_map.json',{method:'PUT',headers:H,body:JSON.stringify(mapBody)});
+      if(!r.ok){ const t=await r.text(); throw new Error('pdf_map 更新失败: '+t.slice(0,150)); }
+      toast('✅ 已上传 '+imgPaths.length+' 张照片：前台点【'+catLabel+'】直接看');
+    }catch(err){ alert('上传失败：'+err.message); }
+    e.target.value='';
+  };
 }
 
 // ---------- 批量添加 ----------
