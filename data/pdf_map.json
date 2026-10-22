@@ -23,6 +23,11 @@
         "pdfs/acme_cat12_p18.webp",
         "pdfs/acme_cat12_p19.webp"
       ]
+    },
+    "cat13": {
+      "images": [
+        "pdfs/acme_cat13_p1.webp"
+      ]
     }
   },
   "phroom": {
