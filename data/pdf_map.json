@@ -62,5 +62,12 @@
         "pdfs/sensory_cat11_p1.webp"
       ]
     }
+  },
+  "store1": {
+    "cat14": {
+      "images": [
+        "pdfs/store1_cat14_p1.webp"
+      ]
+    }
   }
 }
